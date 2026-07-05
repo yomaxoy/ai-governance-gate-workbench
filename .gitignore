@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local seminar material / screenshots (nicht ins Repo)
+/pics
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

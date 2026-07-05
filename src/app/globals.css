@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Design-Tokens (Tailwind v4, CSS-first via @theme).
+ * Light-Theme-Prototyp — die Komponenten nutzen text-text, text-muted,
+ * bg-surface, border-border, bg-primary, rounded-card usw. Diese Tokens
+ * MÜSSEN hier definiert sein, sonst erzeugt Tailwind kein CSS und die
+ * Klassen sind wirkungslos (blasse/unlesbare Farben).
+ */
+@theme {
+  /* Flächen */
+  --color-background: #ffffff; /* Basis */
+  --color-surface: #f5f6f8; /* Seitenhintergrund + Hover */
+  --color-foreground: #16181d;
+
+  /* Text */
+  --color-text: #16181d; /* Primärtext (Ink) */
+  --color-muted: #5c6470; /* Sekundärtext */
+
+  /* Linien */
+  --color-border: #e4e6eb;
+
+  /* Marke */
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-primary-foreground: #ffffff;
+
+  /* Status */
+  --color-danger: #dc2626;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-info: #0284c7;
+
+  /* Radien */
+  --radius-card: 0.75rem;
+
+  /* Schrift */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Arial, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+/*
+ * Sektions-Label (Overlay-Menü, User-Card): klein, versal, gesperrt, gedämpft.
+ * Wird in mehreren Komponenten via className="group-label" genutzt.
+ */
+.group-label {
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+
+/* Schlanke Scrollbar für die Overlay-Menü-Navigation. */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 9999px;
 }
