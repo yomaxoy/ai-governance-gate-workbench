@@ -40,7 +40,7 @@ export function NotificationPopover({ onClose }: { onClose: () => void }) {
           <Link
             href="/notifications"
             onClick={onClose}
-            className="text-sm font-medium text-info hover:underline"
+            className="text-sm font-medium text-primary hover:underline"
           >
             alle Ansehen ›
           </Link>

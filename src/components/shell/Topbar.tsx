@@ -34,7 +34,7 @@ export function Topbar({
           >
             <Bell size={20} />
             {unreadCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-danger" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-accent" />
             )}
           </button>
           {notifOpen && (

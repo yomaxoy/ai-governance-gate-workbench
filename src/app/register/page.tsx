@@ -143,7 +143,7 @@ function RegisterContent() {
                 {f}
               </button>
             ))}
-            <button className="px-3 py-1.5 text-sm text-info">More ›</button>
+            <button className="px-3 py-1.5 text-sm text-primary">More ›</button>
             <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1.5 border border-border">
               <Search size={15} className="text-muted" />
               <input

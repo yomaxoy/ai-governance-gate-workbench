@@ -32,7 +32,7 @@ export default function NotificationsPage() {
       <PageHeader icon={Bell} title="Risks & Notifications">
         <button
           onClick={markAllRead}
-          className="text-sm font-medium text-info hover:underline"
+          className="text-sm font-medium text-primary hover:underline"
         >
           Alle als gelesen markieren
         </button>

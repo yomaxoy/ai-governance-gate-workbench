@@ -37,7 +37,7 @@ export function RequestRow({ initiative }: { initiative: Initiative }) {
           <RiskBadge risk={initiative.risk} />
           <button
             onClick={() => openWorkbench(initiative.id, initiative.currentGate)}
-            className="text-sm font-medium text-info hover:underline"
+            className="text-sm font-medium text-primary hover:underline"
           >
             Details ansehen ›
           </button>

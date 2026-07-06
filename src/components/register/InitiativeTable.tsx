@@ -92,7 +92,7 @@ export function InitiativeTable({ items }: { items: Initiative[] }) {
               <td className="px-3 py-3">
                 <Link
                   href={`/initiative/${i.id}`}
-                  className="inline-flex items-center gap-0.5 font-medium text-info hover:underline"
+                  className="inline-flex items-center gap-0.5 font-medium text-primary hover:underline"
                 >
                   Details ansehen
                   <ChevronRight size={15} />

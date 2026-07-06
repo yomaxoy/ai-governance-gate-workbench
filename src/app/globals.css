@@ -20,10 +20,12 @@
   /* Linien */
   --color-border: #e4e6eb;
 
-  /* Marke */
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
+  /* Marke — OVB Corporate Design (ovb.de): Navy + Magenta-Akzent */
+  --color-primary: #003366; /* OVB-Navy */
+  --color-primary-dark: #002850; /* Hover/aktiv */
   --color-primary-foreground: #ffffff;
+  --color-accent: #ff3399; /* OVB-Magenta (Akzent) */
+  --color-accent-foreground: #ffffff;
 
   /* Status */
   --color-danger: #dc2626;

@@ -53,7 +53,7 @@ export function OverlayMenu({
                       : "text-text hover:bg-surface"
                   }`}
                 >
-                  <Icon size={18} />
+                  <Icon size={18} className={active ? "text-accent" : ""} />
                   {label}
                 </Link>
               );
@@ -67,7 +67,7 @@ export function OverlayMenu({
                 key={r.id}
                 href={`/initiative/${r.id}`}
                 onClick={onClose}
-                className="rounded-full px-3 py-2 text-sm text-info hover:bg-surface"
+                className="rounded-full px-3 py-2 text-sm text-primary hover:bg-surface"
               >
                 {r.label}
               </Link>

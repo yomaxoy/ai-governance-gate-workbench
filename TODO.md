@@ -7,6 +7,7 @@ Quelle je Abschnitt: Section-Titel + Feld-Labels + Badges + Dropdown-Optionen au
 - **Request Wizard** — vollständig
 - **Gate Workbench: Gate 1–5** — alle Review-Felder 1:1 nachgebaut + per Screenshot verifiziert
   - Neue Feld-Konzepte für Gate 4/5: Quelle `gate_input` (Badge „Gate N Eingabe · Rolle"), `kind: "matrix"`, `section.preface`
+- **OVB-Branding** — Theme-Tokens in `src/app/globals.css` auf OVB Corporate Design (ovb.de) umgestellt: `--color-primary #003366` (Navy), `--color-accent #ff3399` (Magenta). Links `text-info` → `text-primary` (Navy), Notification-Dot + aktives Nav-Icon = Magenta. Semantische Status-Farben unverändert.
 
 ## ✅ AI Register — Detailansicht-Reiter (erledigt)
 Datei: `src/app/initiative/[id]/page.tsx` · alle 5 Reiter 1:1 nach PDF + Screenshot-verifiziert.
