@@ -100,6 +100,17 @@ export interface ReviewFieldData {
   value: string;
   decision: ReviewDecision;
   note: string;
+  required?: boolean; // shows the "*" marker; defaults to true when undefined
+  placeholder?: string; // hint for editable (gate-decision / free) fields
+}
+
+// A row in a gate's "Nachweise und Anhänge" evidence table — §7
+export interface EvidenceDoc {
+  name: string; // Dokumentname
+  origin: string; // Herkunft, e.g. "AI Request" / "Gate 1"
+  requirement: string; // Pflichtstatus: "Pflicht" | "Optional"
+  submittedBy: string; // Eingereicht durch
+  status: string; // Reviewstatus, e.g. "Eingereicht" / "Fehlt"
 }
 
 export interface CriterionData {

@@ -99,6 +99,8 @@ const r1 = req({
     "Reduktion des monatlichen Rechercheaufwands um ca. 80 Stunden.",
   nutzerkreis: "Alle Mitarbeitenden der Governance- und Compliance-Bereiche.",
   geschaeftsprozess: "Richtlinien-Recherche und interne Auskunft.",
+  menschlicheKontrolle:
+    "Antworten sind unverbindlich; Nutzende prüfen die verlinkten Quellen vor Verwendung. Fachliche Freigabe verbleibt beim Governance-Team.",
   systeme: "DMS, SharePoint, interne Wissensbasis",
   externerAnbieter: "Microsoft Azure OpenAI",
   nutzungsvolumen: "ca. 1.500 Anfragen / Monat",

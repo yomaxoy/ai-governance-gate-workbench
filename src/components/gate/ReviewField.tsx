@@ -1,10 +1,76 @@
 "use client";
 
-import { CircleCheck, Cpu, FileInput } from "lucide-react";
-import type { ReviewDecision, ReviewFieldData } from "@/lib/types";
+import { ArrowUpCircle, CircleCheck, Cpu, FileInput, Upload } from "lucide-react";
+import type { EvidenceDoc, ReviewDecision, ReviewFieldData } from "@/lib/types";
 import { DECISION_META, fieldNeedsNote } from "@/lib/workflow";
 
-function SourceBadge({ source }: { source: ReviewFieldData["source"] }) {
+// A field's value is reviewer-editable when it is decided at *this* gate
+// (a "Gate N Entscheidung" where N === current gate) or a free status field —
+// not when it is inherited from the AI Request, a previous gate, or the system.
+function isEditable(
+  source: ReviewFieldData["source"],
+  currentGate: number,
+): boolean {
+  if (source === "none") return true;
+  if (source.startsWith("gate_")) return Number(source.split("_")[1]) >= currentGate;
+  return false;
+}
+
+// "Nachweise und Anhänge" — upload dropzone + expected-document table (§7).
+function EvidenceArea({ docs }: { docs: EvidenceDoc[] }) {
+  const statusClass = (s: string) =>
+    s === "Akzeptiert" || s === "Eingereicht"
+      ? "text-success"
+      : s === "Fehlt"
+        ? "text-danger"
+        : s === "In Prüfung"
+          ? "text-warning"
+          : "text-muted";
+  return (
+    <div className="mb-3 space-y-2">
+      <div className="flex flex-col items-center gap-1 rounded-md border border-dashed border-border bg-surface px-3 py-4 text-center">
+        <Upload size={18} className="text-muted" />
+        <p className="text-xs text-muted">
+          Dateien hier ablegen oder klicken (PDF, PNG, JPG, JPEG, PPTX, DOCX)
+        </p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-left text-xs">
+          <thead>
+            <tr className="text-muted">
+              <th className="py-1 pr-3 font-medium">Dokumentname</th>
+              <th className="py-1 pr-3 font-medium">Herkunft</th>
+              <th className="py-1 pr-3 font-medium">Pflichtstatus</th>
+              <th className="py-1 pr-3 font-medium">Eingereicht durch</th>
+              <th className="py-1 pr-3 font-medium">Reviewstatus</th>
+            </tr>
+          </thead>
+          <tbody className="text-text">
+            {docs.map((d) => (
+              <tr key={d.name} className="border-t border-border">
+                <td className="py-1.5 pr-3">{d.name}</td>
+                <td className="py-1.5 pr-3 text-muted">{d.origin}</td>
+                <td className="py-1.5 pr-3 text-muted">{d.requirement}</td>
+                <td className="py-1.5 pr-3 text-muted">{d.submittedBy}</td>
+                <td className={`py-1.5 pr-3 font-medium ${statusClass(d.status)}`}>
+                  {d.status}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function SourceBadge({
+  source,
+  currentGate,
+}: {
+  source: ReviewFieldData["source"];
+  currentGate: number;
+}) {
   if (source === "none") return null;
 
   if (source === "ai_request") {
@@ -25,8 +91,17 @@ function SourceBadge({ source }: { source: ReviewFieldData["source"] }) {
     );
   }
 
-  // gate_N — green "Gate N Entscheidung"
-  const gateNumber = source.split("_")[1];
+  // gate_N — decided at *this* gate → green "Gate N Entscheidung";
+  // inherited from an earlier gate → amber "aus Gate N" (read-only).
+  const gateNumber = Number(source.split("_")[1]);
+  if (gateNumber < currentGate) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-600">
+        <ArrowUpCircle size={11} />
+        aus Gate {gateNumber}
+      </span>
+    );
+  }
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-success">
       <CircleCheck size={11} />
@@ -45,33 +120,45 @@ export function ReviewField({
   field,
   readOnly,
   onChange,
+  docs,
+  currentGate = 1,
 }: {
   field: ReviewFieldData;
   readOnly: boolean;
   onChange: (patch: Partial<ReviewFieldData>) => void;
+  docs?: EvidenceDoc[];
+  currentGate?: number;
 }) {
   const needsNote = fieldNeedsNote(field);
+  const editable = isEditable(field.source, currentGate);
 
   return (
     <div className="rounded-card border border-border bg-white p-4">
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <label className="text-sm font-medium text-text">
-          {field.label} <span className="text-danger">*</span>
+          {field.label}{" "}
+          {field.required !== false && <span className="text-danger">*</span>}
         </label>
-        <SourceBadge source={field.source} />
+        <SourceBadge source={field.source} currentGate={currentGate} />
       </div>
 
-      {/* Value (read-only, prefilled from source) */}
-      <textarea
-        value={field.value}
-        onChange={(e) => onChange({ value: e.target.value })}
-        readOnly={field.source !== "none"}
-        rows={field.value.length > 70 ? 2 : 1}
-        placeholder={field.source === "none" ? "Eintrag / Bewertung …" : ""}
-        className={`mb-3 w-full resize-none rounded-md border border-border px-3 py-2 text-sm text-text outline-none focus:border-primary ${
-          field.source !== "none" ? "bg-surface" : "bg-white"
-        }`}
-      />
+      {/* Value — evidence block, or a value box (editable for gate decisions) */}
+      {docs ? (
+        <EvidenceArea docs={docs} />
+      ) : (
+        <textarea
+          value={field.value}
+          onChange={(e) => onChange({ value: e.target.value })}
+          readOnly={readOnly || !editable}
+          rows={field.value.length > 70 ? 2 : 1}
+          placeholder={
+            editable ? (field.placeholder ?? "Eintrag / Bewertung …") : ""
+          }
+          className={`mb-3 w-full resize-none rounded-md border border-border px-3 py-2 text-sm text-text outline-none focus:border-primary ${
+            editable ? "bg-white" : "bg-surface"
+          }`}
+        />
+      )}
 
       {/* Decision radios */}
       <div className="flex flex-wrap gap-2">

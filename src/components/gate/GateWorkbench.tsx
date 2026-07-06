@@ -244,6 +244,8 @@ function WorkbenchBody({
                   field={f}
                   readOnly={readOnly}
                   onChange={(patch) => updateField(f.id, patch)}
+                  docs={bp.kind === "evidence" ? bp.docs : undefined}
+                  currentGate={activeGate}
                 />
               );
             })}

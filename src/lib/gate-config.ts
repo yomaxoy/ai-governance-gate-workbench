@@ -3,6 +3,7 @@
 // ============================================================
 import type {
   AiRequestData,
+  EvidenceDoc,
   FieldSource,
   GateId,
   ReviewFieldData,
@@ -141,12 +142,33 @@ interface FieldBlueprint {
   // pull value from request, or a fixed/synthetic value
   from?: keyof AiRequestData;
   fixed?: string;
+  optional?: boolean; // no "*" marker
+  placeholder?: string; // hint for editable gate-decision / free fields
+  kind?: "field" | "evidence"; // "evidence" → upload + document table
+  docs?: EvidenceDoc[]; // document rows for an evidence block
 }
 
 export interface GateSection {
   title: string;
   fields: FieldBlueprint[];
 }
+
+// Expected evidence documents per gate — §7 "Nachweise und Anhänge"
+export const GATE1_DOCS: EvidenceDoc[] = [
+  { name: "Business Case", origin: "AI Request", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Prozessbeschreibung", origin: "AI Request", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Fehlt" },
+  { name: "erste Nutzenannahmen", origin: "Gate 1", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "Anbieter-/Transferinformationen", origin: "Gate 1", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Akzeptiert" },
+  { name: "vorhandene fachliche Richtlinien", origin: "Gate 1", requirement: "Optional", submittedBy: "Max Mustermann", status: "Nicht vorhanden" },
+];
+
+export const GATE2_DOCS: EvidenceDoc[] = [
+  { name: "Datenklassifizierung", origin: "Gate 2", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Datenschutzbewertung", origin: "Gate 2", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Fehlt" },
+  { name: "Anbieter-/Transferinformationen", origin: "AI Request", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "Risikoanalyse", origin: "Gate 2", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Akzeptiert" },
+  { name: "Prozessbeschreibung", origin: "AI Request", requirement: "Optional", submittedBy: "Max Mustermann", status: "Nicht vorhanden" },
+];
 
 export const GATE_SECTIONS: Record<GateId, GateSection[]> = {
   1: [
@@ -155,18 +177,46 @@ export const GATE_SECTIONS: Record<GateId, GateSection[]> = {
       fields: [
         { id: "g1_titel", label: "Titel der KI-Initiative", source: "ai_request", from: "titel" },
         { id: "g1_art", label: "Art der KI-Initiative", source: "ai_request", from: "art" },
-        { id: "g1_fach", label: "Fachbereich / Organisationseinheit", source: "ai_request", from: "fachbereich" },
+        { id: "g1_fach", label: "Fachbereich / Organisationseinheit / Länder", source: "ai_request", from: "fachbereich" },
         { id: "g1_owner", label: "AI Owner", source: "ai_request", from: "aiOwner" },
-        { id: "g1_sponsor", label: "Management Sponsor", source: "ai_request", from: "managementSponsor" },
+        { id: "g1_sponsor", label: "Management Sponsor", source: "ai_request", from: "managementSponsor", optional: true },
       ],
     },
     {
-      title: "Business Need & Nutzen",
+      title: "Business Need & Value",
       fields: [
         { id: "g1_problem", label: "Welches Problem soll gelöst werden?", source: "ai_request", from: "problem" },
         { id: "g1_ergebnis", label: "Welches Ergebnis soll erreicht werden?", source: "ai_request", from: "ergebnis" },
+        { id: "g1_nutzen", label: "Erwarteter Nutzen (Mehrfachauswahl)", source: "ai_request", from: "nutzen" },
         { id: "g1_hyp", label: "Nutzenhypothese", source: "ai_request", from: "nutzenhypothese" },
-        { id: "g1_kierf", label: "Ist KI erforderlich?", source: "ai_request", from: "kiErforderlich" },
+        { id: "g1_kierf", label: "Ist KI für diesen Anwendungsfall erforderlich?", source: "ai_request", from: "kiErforderlich" },
+      ],
+    },
+    {
+      title: "Scope & Users",
+      fields: [
+        { id: "g1_nutzerkreis", label: "Vorgesehener Nutzerkreis", source: "ai_request", from: "nutzerkreis" },
+        { id: "g1_prozess", label: "Betroffener Geschäftsprozess", source: "ai_request", from: "geschaeftsprozess" },
+        { id: "g1_nutzung", label: "Erwartete Nutzung", source: "ai_request", from: "erwarteteNutzung" },
+        { id: "g1_abgrenzung", label: "Abgrenzung der Initiative", source: "gate_1", fixed: "", placeholder: "Beispiel: Abgrenzung der Initiative zu anderen Use-Cases in AI Register" },
+        { id: "g1_doppel", label: "Gefundene ähnliche Initiative / Doppelinitiative", source: "none", fixed: "", optional: true, placeholder: "Status: Keine gefunden / mögliche Überschneidung / Eskalation" },
+      ],
+    },
+    {
+      title: "Early risk context (Pre-Check für Gate 2)",
+      fields: [
+        { id: "g1_datenarten", label: "Verarbeitete Datenarten", source: "ai_request", from: "datenarten" },
+        { id: "g1_datenklasse", label: "Vorläufige Dokumenten-/Datenklasse", source: "ai_request", from: "datenklasse" },
+        { id: "g1_entsch", label: "Hat der Output Einfluss auf wesentliche Entscheidungen?", source: "ai_request", from: "entscheidungseinfluss" },
+        { id: "g1_kontrolle", label: "Vorgesehene menschliche Kontrolle", source: "ai_request", from: "menschlicheKontrolle", optional: true },
+        { id: "g1_anbieter", label: "Externer Anbieter oder externe Verarbeitung vorgesehen?", source: "ai_request", from: "externerAnbieter" },
+      ],
+    },
+    {
+      title: "Evidence",
+      fields: [
+        { id: "g1_nachweise", label: "Nachweise und Anhänge", source: "none", fixed: "", optional: true, kind: "evidence", docs: GATE1_DOCS },
+        { id: "g1_begruendung", label: "Gate 1 Entscheidungsbegründung", source: "gate_1", fixed: "", placeholder: "Fasse zusammen, warum die Initiative für Gate 2 freigegeben, zur Überarbeitung zurückgegeben oder abgelehnt wird. Nenne zentrale Nachweise, offene Punkte und verbindliche Auflagen." },
       ],
     },
   ],
@@ -176,17 +226,52 @@ export const GATE_SECTIONS: Record<GateId, GateSection[]> = {
       fields: [
         { id: "g2_daten", label: "Verarbeitete Datenarten", source: "ai_request", from: "datenarten" },
         { id: "g2_systeme", label: "Benötigte Systeme und Datenquellen", source: "ai_request", from: "systeme" },
-        { id: "g2_klasse", label: "Vorläufige Dokumenten-/Datenklasse", source: "ai_request", from: "datenklasse" },
-        { id: "g2_entsch", label: "Einfluss auf wesentliche Entscheidungen", source: "ai_request", from: "entscheidungseinfluss" },
+        { id: "g2_vklasse", label: "Vorläufige Dokumenten-/Datenklasse", source: "ai_request", from: "datenklasse", optional: true },
+        { id: "g2_pii", label: "Personenbezogene Daten enthalten?", source: "ai_request", fixed: "Nein" },
+        { id: "g2_schutz", label: "Besondere Schutzbedarfe erkannt? (Mehrfachauswahl)", source: "gate_2", fixed: "", placeholder: "Auswahl: besondere Kategorien personenbezogener Daten; Zugangsdaten / Secrets; Geschäftsgeheimnisse; Vertrags- oder Finanzinformationen; regulatorisch sensible Informationen; keine; unklar" },
+        { id: "g2_fach", label: "Fachbereich / Organisationseinheiten / Länder", source: "ai_request", from: "fachbereich" },
+        { id: "g2_bklasse", label: "Bestätigte Dokumenten-/Datenklasse", source: "gate_2", fixed: "", placeholder: "Auswahl: Klasse 0: Public; Klasse 1: Internal; Klasse 2: Restricted; Klasse 3: Confidential; Klasse 4: Highly Confidential / Sonderfreigabe; Klärung erforderlich" },
+        { id: "g2_umfang", label: "Freigegebener Datenumfang", source: "gate_2", fixed: "", placeholder: "Beispiel: C1–C3; C3 nur nach Data-Owner-Freigabe und Human Review" },
       ],
     },
     {
-      title: "Risk & Controls",
+      title: "Risk & Decision Relevance",
       fields: [
-        { id: "g2_risk", label: "Risikoklasse (festlegen)", source: "none", fixed: "" },
-        { id: "g2_anbieter", label: "Externer Anbieter / Modellroute", source: "ai_request", from: "externerAnbieter" },
-        { id: "g2_oversight", label: "Human-Oversight-Level", source: "none", fixed: "" },
-        { id: "g2_controls", label: "Verbindliche Mindestkontrollen", source: "none", fixed: "" },
+        { id: "g2_nutzerkreis", label: "Vorgesehener Nutzerkreis", source: "ai_request", from: "nutzerkreis" },
+        { id: "g2_prozess", label: "Betroffener Geschäftsprozess", source: "gate_1", from: "geschaeftsprozess" },
+        { id: "g2_einfluss", label: "Hat der Output Einfluss auf wesentliche Entscheidungen?", source: "ai_request", from: "entscheidungseinfluss", optional: true },
+        { id: "g2_schaden", label: "Mögliche negative Auswirkungen bei Fehlfunktion oder Fehlentscheidung", source: "gate_2", fixed: "", optional: true, placeholder: "Beschreibe mögliche Schäden oder Fehlfolgen, z. B. falsche fachliche Entscheidungen, Benachteiligung betroffener Personen, Offenlegung sensibler Daten, Prozessunterbrechungen, finanzielle Schäden oder Reputationsrisiken." },
+        { id: "g2_risk", label: "Bestätigte Risikoklasse", source: "gate_2", fixed: "", placeholder: "Auswahl: Low Risk; High Risk; Unzulässig / Eskalation erforderlich" },
+        { id: "g2_govrel", label: "Regulatorische oder interne Governance-Relevanz (Mehrfachauswahl)", source: "gate_2", fixed: "", placeholder: "Auswahl: Keine besondere Relevanz erkannt; Datenschutzprüfung erforderlich; Legal-/Compliance-Prüfung erforderlich; Erhöhte Human-Oversight-Anforderung; Eskalation an AI Governance Board erforderlich" },
+      ],
+    },
+    {
+      title: "Model, Provider & Processing Context",
+      fields: [
+        { id: "g2_loesung", label: "Bevorzugte Lösung oder Tool", source: "ai_request", from: "bevorzugteLoesung", optional: true },
+        { id: "g2_betrieb", label: "Vorgeschlagenes Betriebsmodell", source: "ai_request", from: "betriebsmodell", optional: true },
+        { id: "g2_anbieter", label: "Externer Anbieter (falls vorhanden)", source: "ai_request", from: "externerAnbieter", optional: true },
+        { id: "g2_transfer", label: "Dürfen Daten an ein externes Modell übertragen werden?", source: "gate_2", fixed: "", optional: true, placeholder: "Auswahl: Ja; Ja unter Auflagen; Nein; Noch zu klären" },
+        { id: "g2_zbetrieb", label: "Zulässiges Betriebsmodell", source: "gate_2", fixed: "", placeholder: "Auswahl: externes Cloud-/SaaS-Modell; internes oder lokal betriebenes Modell; hybride Lösung; noch offen" },
+        { id: "g2_zmodell", label: "Zulässiger Modellrahmen", source: "gate_2", fixed: "", placeholder: "Auswahl: Freigegebene externe Modelle; Nur interne/private Modelle; Lokales Modell erforderlich; Finale Auswahl erfolgt in Gate 3" },
+        { id: "g2_eskal", label: "Eskalation erforderlich?", source: "gate_2", fixed: "", placeholder: "Auswahl: Nein; Ja – AI Governance Board; Ja – andere zuständige Stelle" },
+        { id: "g2_exttransfer", label: "Externe Datenübertragung", source: "gate_2", fixed: "", placeholder: "Auswahl: erlaubt; erlaubt unter Auflagen; untersagt" },
+      ],
+    },
+    {
+      title: "Human Oversight & Minimum Controls",
+      fields: [
+        { id: "g2_kontrolle", label: "Vorgesehene menschliche Kontrolle", source: "ai_request", from: "menschlicheKontrolle", optional: true },
+        { id: "g2_oversight", label: "Verbindliches Human-Oversight-Level", source: "gate_2", fixed: "", placeholder: "Auswahl: Keine zusätzliche menschliche Prüfung erforderlich; Stichprobenartige Prüfung; Menschliche Prüfung vor wesentlicher Nutzung; Verbindliche menschliche Freigabe jedes entscheidungsrelevanten Outputs; Human Review bei Ausnahmen oder Eskalationen" },
+        { id: "g2_controls", label: "Erforderliche Mindestkontrollen (Mehrfachauswahl)", source: "gate_2", fixed: "", placeholder: "Auswahl: Rollen- und Zugriffskontrolle; Data Loss Prevention; Logging und Audit Trail; Einschränkung der zulässigen Modelle; Retrieval- und Datenzugriffsbeschränkungen; Redaction / Datenminimierung; Human Review; Output- bzw. Content-Filter; Incident- und Eskalationsprozess; Regelmäßige Re-Evaluation; Nutzung externer Modelle untersagt" },
+      ],
+    },
+    {
+      title: "Evidence & Gate Decision",
+      fields: [
+        { id: "g2_nachweise", label: "Nachweise und Anhänge", source: "none", fixed: "", optional: true, kind: "evidence", docs: GATE2_DOCS },
+        { id: "g2_auflagen", label: "Verbindliche Auflagen für Gate 3", source: "gate_2", fixed: "", placeholder: "Dokumentiere die technischen und organisatorischen Vorgaben, die im Solution Design nachgewiesen werden müssen, z. B. Nutzung eines internen Modells, keine externe Datenübertragung, RBAC, DLP, Human Review, Retrieval-Beschränkungen, Logging oder Incident-Eskalation." },
+        { id: "g2_begruendung", label: "Gate 2 Entscheidungsbegründung", source: "gate_2", fixed: "", placeholder: "Fasse das bestätigte Risikoprofil zusammen und begründe Datenklasse, Risikoklasse, Modellrahmen, Human-Oversight-Level und die für Gate 3 verbindlichen Mindestkontrollen." },
       ],
     },
   ],
@@ -240,8 +325,8 @@ export const GATE_SECTIONS: Record<GateId, GateSection[]> = {
     {
       title: "Value, Adoption & Portfolio Fit",
       fields: [
-        { id: "g5_activeusers", label: "Aktive Nutzer im Reviewzeitraum", source: "system", fixed: "32 von 40 Pilotnutzern" },
-        { id: "g5_volume", label: "Anfrage- oder Prozessvolumen", source: "system", fixed: "23.840 Anfragen / 30 Tage" },
+        { id: "g5_activeusers", label: "Aktive Nutzer im Reviewzeitraum", source: "system", fixed: "32 von 40 Pilotnutzern aktiv · 80 % Adoption · Zielwert 70 %" },
+        { id: "g5_volume", label: "Anfrage- oder Prozessvolumen", source: "system", fixed: "1.280 Anfragen im Reviewzeitraum · durchschnittlich 6,7 Anfragen je aktivem Nutzer und Woche" },
         { id: "g5_nutzen", label: "Nutzen und Adoption", source: "none", fixed: "" },
         { id: "g5_quality", label: "Qualität und Zuverlässigkeit", source: "none", fixed: "" },
         { id: "g5_risk", label: "Risiko-, Compliance- und Security-Kontrollen", source: "none", fixed: "" },
@@ -341,6 +426,8 @@ export function buildGateFields(
         value,
         decision: "unset",
         note: "",
+        required: !bp.optional,
+        placeholder: bp.placeholder,
       });
     }
   }
