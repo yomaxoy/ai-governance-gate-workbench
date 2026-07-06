@@ -185,6 +185,31 @@ function WorkbenchBody({
     closeWorkbench();
   };
 
+  // Gate 5 renders a "preface" section (Review-Kontext) above the inherited
+  // constraints, unnumbered; the remaining sections carry the A/B/C… numbers.
+  const sections = GATE_SECTIONS[activeGate];
+  const prefaceSections = sections.filter((s) => !!s.preface);
+  const bodySections = sections.filter((s) => !s.preface);
+  const renderFields = (fields: (typeof sections)[number]["fields"]) =>
+    fields.map((bp) => {
+      const f = review.fields.find((x) => x.id === bp.id);
+      if (!f) return null;
+      return (
+        <ReviewField
+          key={f.id}
+          field={f}
+          readOnly={readOnly}
+          onChange={(patch) => updateField(f.id, patch)}
+          docs={bp.kind === "evidence" ? bp.docs : undefined}
+          kind={bp.kind}
+          uploadHint={bp.uploadHint}
+          control={bp.control}
+          columns={bp.columns}
+          currentGate={activeGate}
+        />
+      );
+    });
+
   const footer = (
     <GateFooter
       gate={activeGate}
@@ -227,28 +252,22 @@ function WorkbenchBody({
 
         <CriteriaChecklist gate={activeGate} criteria={review.criteria} />
 
+        {/* Preface (unnumbered) sections — e.g. Gate 5 Review-Kontext */}
+        {prefaceSections.map((section) => (
+          <div key={section.title} className="space-y-3">
+            {renderFields(section.fields)}
+          </div>
+        ))}
+
         <InheritedConstraints gate={activeGate} />
 
-        {/* Review sections */}
-        {GATE_SECTIONS[activeGate].map((section, i) => (
+        {/* Numbered review sections */}
+        {bodySections.map((section, i) => (
           <div key={section.title} className="space-y-3">
             <h3 className="text-sm font-semibold text-text">
               Section {String.fromCharCode(65 + i)}: {section.title}
             </h3>
-            {section.fields.map((bp) => {
-              const f = review.fields.find((x) => x.id === bp.id);
-              if (!f) return null;
-              return (
-                <ReviewField
-                  key={f.id}
-                  field={f}
-                  readOnly={readOnly}
-                  onChange={(patch) => updateField(f.id, patch)}
-                  docs={bp.kind === "evidence" ? bp.docs : undefined}
-                  currentGate={activeGate}
-                />
-              );
-            })}
+            {renderFields(section.fields)}
           </div>
         ))}
       </div>

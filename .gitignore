@@ -39,6 +39,9 @@ yarn-error.log*
 # local seminar material / screenshots (nicht ins Repo)
 /pics
 
+# local design/reference exports (PDFs etc., nicht ins Repo)
+/docs
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

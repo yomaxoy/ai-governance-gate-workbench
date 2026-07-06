@@ -144,13 +144,39 @@ interface FieldBlueprint {
   fixed?: string;
   optional?: boolean; // no "*" marker
   placeholder?: string; // hint for editable gate-decision / free fields
-  kind?: "field" | "evidence"; // "evidence" → upload + document table
+  inputRole?: string; // for source "gate_input": responsible role — §7 Gate 4/5
+  // "evidence" → dropzone + document table; "upload" → single dropzone;
+  // "control" → control-implementation card (Komponente/Rolle/Umsetzung/Nachweis);
+  // "matrix" → labelled multi-cell grid (Kriterien-/Kennzahltabellen — §7 Gate 4/5)
+  kind?: "field" | "evidence" | "upload" | "control" | "matrix";
   docs?: EvidenceDoc[]; // document rows for an evidence block
+  uploadHint?: string; // caption for a single-file upload field
+  control?: ControlImpl; // sub-inputs for a control-implementation card
+  columns?: MatrixCell[]; // cells for a "matrix" field
+}
+
+// One control's implementation record — Gate 3 §7 "Control Implementation"
+export interface ControlImpl {
+  component: string; // Plattformdienst / Komponente
+  role: string; // Verantwortliche Rolle
+  impl: string; // Technische Umsetzung
+  evidenceHint: string; // Nachweis-Hinweis
+}
+
+// One cell of a "matrix" field — a labelled sub-input — §7 Gate 4/5
+export interface MatrixCell {
+  label: string; // column / row label
+  value?: string; // prefilled read-only value (systemgeneriert)
+  hint?: string; // placeholder for an editable cell
+  upload?: boolean; // render as a mini upload dropzone
 }
 
 export interface GateSection {
   title: string;
   fields: FieldBlueprint[];
+  // renders above the inherited-constraints block without a "Section X:" prefix
+  // and is skipped in the A/B/C… numbering — §7 Gate 5 (Review-Kontext)
+  preface?: boolean;
 }
 
 // Expected evidence documents per gate — §7 "Nachweise und Anhänge"
@@ -168,6 +194,51 @@ export const GATE2_DOCS: EvidenceDoc[] = [
   { name: "Anbieter-/Transferinformationen", origin: "AI Request", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
   { name: "Risikoanalyse", origin: "Gate 2", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Akzeptiert" },
   { name: "Prozessbeschreibung", origin: "AI Request", requirement: "Optional", submittedBy: "Max Mustermann", status: "Nicht vorhanden" },
+];
+
+export const GATE3_DOCS: EvidenceDoc[] = [
+  { name: "Business Case", origin: "AI Request", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Datenklassifizierung", origin: "Gate 2", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Akzeptiert" },
+  { name: "Datenschutzbewertung", origin: "Gate 2", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "Anbieter-/Transferinformationen", origin: "AI Request", requirement: "Optional", submittedBy: "Max Mustermann", status: "Nicht vorhanden" },
+  { name: "Risikoanalyse", origin: "Gate 2", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Akzeptiert" },
+  { name: "Prozessbeschreibung", origin: "AI Request", requirement: "Optional", submittedBy: "Max Mustermann", status: "Nicht vorhanden" },
+  { name: "Architekturdiagramm", origin: "Gate 3", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Datenflussdiagramm", origin: "Gate 3", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "IAM-/Rollenmatrix", origin: "Gate 3", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Fehlt" },
+  { name: "Control Implementation List", origin: "Gate 3", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "Logging-/Monitoring-Konzept", origin: "Gate 3", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Security-Konzept", origin: "Gate 3", requirement: "Optional", submittedBy: "Max Mustermann", status: "Nicht vorhanden" },
+];
+
+export const GATE4_DOCS: EvidenceDoc[] = [
+  { name: "Deployment- und Release-Dokumentation", origin: "Gate 4", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Funktions- und Integrationstestbericht", origin: "Gate 4", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "Security- und Zugriffstest", origin: "Gate 4", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "DLP-/Datenkontrolltest", origin: "Gate 4", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "Evaluations-/TEVV-Report", origin: "Gate 4", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Fehlt" },
+  { name: "Human-Oversight-Test", origin: "Gate 4", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Pilotkonzept", origin: "Gate 4", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Akzeptiert" },
+  { name: "Trainingsmaterial", origin: "Gate 4", requirement: "Optional", submittedBy: "Max Mustermann", status: "Nicht vorhanden" },
+  { name: "Betriebs- und Supportkonzept", origin: "Gate 4", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "Monitoring-/Alert-Nachweis", origin: "Gate 4", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Incident-/Fallback-Test", origin: "Gate 4", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "Abnahmeprotokoll", origin: "Gate 4", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Fehlt" },
+];
+
+export const GATE5_DOCS: EvidenceDoc[] = [
+  { name: "Betriebs- und Monitoringreport", origin: "Gate 5", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Value-/Adoptionsreport", origin: "Gate 5", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Nutzerfeedback", origin: "Gate 5", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "aktueller Evaluationsreport", origin: "Gate 5", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Human-Review-Auswertung", origin: "Gate 5", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "Incident- und Finding-Historie", origin: "Gate 5", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Akzeptiert" },
+  { name: "Kostenreport", origin: "Gate 5", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Eingereicht" },
+  { name: "Berechtigungsreview", origin: "Gate 5", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "Control Effectiveness Review", origin: "Gate 5", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "Fehlt" },
+  { name: "Change Log", origin: "Gate 5", requirement: "Pflicht", submittedBy: "Max Mustermann", status: "In Prüfung" },
+  { name: "Re-Approval-Unterlagen", origin: "Gate 5", requirement: "Optional", submittedBy: "Max Mustermann", status: "Nicht vorhanden" },
+  { name: "Stilllegungskonzept", origin: "Gate 5", requirement: "Optional", submittedBy: "Max Mustermann", status: "Nicht vorhanden" },
 ];
 
 export const GATE_SECTIONS: Record<GateId, GateSection[]> = {
@@ -280,58 +351,235 @@ export const GATE_SECTIONS: Record<GateId, GateSection[]> = {
       title: "Solution Context & Architecture",
       fields: [
         { id: "g3_techowner", label: "Technischer Owner / Betriebsverantwortung", source: "ai_request", from: "technischerAnsprechpartner" },
-        { id: "g3_solution", label: "Beschreibung des geplanten Solution Designs", source: "gate_3", fixed: "" },
-        { id: "g3_loesung", label: "Bevorzugte Lösung / Tool", source: "ai_request", from: "bevorzugteLoesung" },
-        { id: "g3_betrieb", label: "Betriebsmodell", source: "ai_request", from: "betriebsmodell" },
-        { id: "g3_integr", label: "Geplante Integrationen", source: "ai_request", from: "integrationen" },
+        { id: "g3_solution", label: "Beschreibung des geplanten Solution Designs", source: "gate_3", fixed: "", placeholder: "Beschreibe Systemgrenze, Hauptkomponenten, Datenflüsse, zentrale Plattformdienste und Verantwortlichkeiten." },
+        { id: "g3_systeme", label: "Finale Systeme und Datenquellen (Mehrfachauswahl)", source: "ai_request", from: "systeme" },
+        { id: "g3_integr", label: "Finale Integrationen (Mehrfachauswahl)", source: "ai_request", from: "integrationen" },
+        { id: "g3_archdoc", label: "Architektur- oder Solution-Design-Nachweis", source: "gate_3", fixed: "", kind: "upload", uploadHint: "Lade ein Architekturdiagramm oder einen äquivalenten Solution-Design-Nachweis mit Systemgrenzen, Komponenten und Integrationen hoch." },
+        { id: "g3_dataflow", label: "Datenflussdiagramm", source: "gate_3", fixed: "", kind: "upload", uploadHint: "Pflichtfeld: bei personenbezogenen/vertraulichen Daten, externem Transfer, RAG oder mehreren Datenquellen." },
       ],
     },
     {
-      title: "Security Controls",
+      title: "Model, Gateway & Routing",
       fields: [
-        { id: "g3_iam", label: "Identitäts-, Rollen- und Zugriffskonzept", source: "none", fixed: "" },
-        { id: "g3_dlp", label: "DLP-, Retrieval- und Human-Review-Kontrollen", source: "none", fixed: "" },
-        { id: "g3_logging", label: "Logging, Auditierbarkeit und Monitoring", source: "none", fixed: "" },
-        { id: "g3_fallback", label: "Technische Ownership und Fallback", source: "none", fixed: "" },
+        { id: "g3_vbetrieb", label: "Vorgeschlagenes Betriebsmodell", source: "ai_request", from: "betriebsmodell", optional: true },
+        { id: "g3_zbetrieb", label: "Zulässiges Betriebsmodell", source: "gate_2", fixed: "internes oder lokal betriebenes Modell", optional: true },
+        { id: "g3_finbetrieb", label: "Finales Betriebs- und Bereitstellungsmodell", source: "gate_3", fixed: "", placeholder: "z. B. Azure Private Endpoint / interne Modellplattform" },
+        { id: "g3_backend", label: "Primäres Modell-Backend", source: "gate_3", fixed: "", placeholder: "Freigegebenes Modell oder Deployment aus dem AI-Katalog auswählen. Beispieloptionen: Freigegebenes externes Modell; Freigegebenes internes/private Modell; Lokales Modell; Neue Modellfreigabe erforderlich" },
+        { id: "g3_katalog", label: "Katalog-Metadaten", source: "system", fixed: "Katalogstatus: Freigegeben · Provider: Interne AI-Plattform · Hosting: Private Cloud · Region: EU · Katalog-ID: AI-MOD-017 · Deployment: knowledge-assistant-prod", optional: true },
+        { id: "g3_route", label: "Finale Modellroute", source: "gate_3", fixed: "", placeholder: "Auswahl: zentrale Gateway-Schicht; internes/private Backend über Plattform; lokales Modell; externe Modellroute unter Gate-2-Auflagen — inkl. Katalog-/Deployment-Auswahl (Bsp.: Internes GPT-Deployment · EU-Region · AI-MOD-017 · Freigabestand 1.2)" },
+        { id: "g3_aidienste", label: "Zusätzliche AI- und Plattformdienste (Mehrfachauswahl)", source: "gate_3", fixed: "", placeholder: "Auswahl: RAG / Vector Search; OCR / Document Intelligence; Tool Calling; externe API; interne Datenplattform; Content Safety; Human Review Service; weitere; keine" },
+        { id: "g3_gateway", label: "Gateway- und Policy-Enforcement-Anforderungen (Mehrfachauswahl)", source: "gate_3", fixed: "", optional: true, placeholder: "Auswahl: AuthN / AuthZ; RBAC / ABAC; Quotas und Rate Limits; Model Routing; Prompt- und Content-Filter; Policy Enforcement; Kosten- und Tokenkontrolle; Tool-Allow-List; API- / MCP-Governance" },
+        { id: "g3_fallbackmodel", label: "Fallback-Modell oder Fallback-Prozess", source: "gate_3", fixed: "", optional: true, placeholder: "Beschreibe alternatives Modell, manuellen Ersatzprozess oder definiertes Degraded-Mode-Verhalten. Pflichtfeld: bei High Risk, geschäftskritischen Prozessen oder automatisierten Abläufen." },
+      ],
+    },
+    {
+      title: "Identity, Access & Data Controls",
+      fields: [
+        { id: "g3_rbac", label: "Rollen- und Zugriffskontrolle", source: "gate_3", fixed: "", kind: "control", control: { component: "Identity Provider / Gateway", role: "Plattform-Team", impl: "Entra-ID-Gruppen und RBAC", evidenceHint: "z. B. Rollenmatrix" } },
+        { id: "g3_dlp", label: "Data Loss Prevention (DLP)", source: "gate_3", fixed: "", kind: "control", control: { component: "Document Intake", role: "Plattform-Team", impl: "Scan vor Ingestion und Deny Rule", evidenceHint: "z. B. DLP-Konzept.pdf" } },
+        { id: "g3_logctrl", label: "Logging & Audit Trail", source: "gate_3", fixed: "", kind: "control", control: { component: "Observability", role: "Plattform-Team", impl: "Gateway Logs und SIEM", evidenceHint: "z. B. Logging-Konzept.pdf" } },
+        { id: "g3_authn", label: "Authentifizierung", source: "gate_3", fixed: "", placeholder: "Auswahl: SSO / OIDC / OAuth2; technischer Service Account; Kombination; andere" },
+        { id: "g3_authz", label: "Autorisierungskonzept", source: "gate_3", fixed: "", placeholder: "Auswahl: RBAC; ABAC; Kombination aus RBAC und ABAC" },
+        { id: "g3_rollen", label: "Zulässige Rollen und Organisationseinheiten (Mehrfachauswahl)", source: "gate_3", fixed: "", placeholder: "Zulässige Rollen, Fachbereiche und Organisationseinheiten festlegen" },
+        { id: "g3_pipeline", label: "Dokumenten- und Retrieval-Pipeline erforderlich?", source: "gate_3", fixed: "", placeholder: "Auswahl: Nein; Ja; Nur für bestimmte Datenklassen oder Quellen" },
+        { id: "g3_docproc", label: "Bei Ja: Erforderliche Dokumentenverarbeitung (Mehrfachauswahl)", source: "gate_3", fixed: "", optional: true, placeholder: "Auswahl: Quarantäne / Malware-Scan; Textextraktion / OCR; Klassifizierung; DLP-Prüfung; Redaction / Datenminimierung; Human Review vor Indexierung; Chunking / Embedding; kontrollierte Indexierung; Metadaten- und Berechtigungsfilter" },
+        { id: "g3_hitl", label: "Umsetzung des Human-Oversight-Levels", source: "gate_3", fixed: "", placeholder: "Beschreibe, an welcher Stelle ein Mensch prüft, entscheidet oder eskaliert und wie diese Entscheidung dokumentiert wird. Pflichtfeld: wenn Gate 2 Human Oversight verlangt." },
+        { id: "g3_secrets", label: "Secrets-Management", source: "gate_3", fixed: "", placeholder: "Pflichtfeld bei APIs, Tools oder technischen Credentials. Auswahl: zentrale Secrets-Verwaltung; Managed Identity; andere genehmigte Lösung" },
+      ],
+    },
+    {
+      title: "Logging, Monitoring & Operational Security",
+      fields: [
+        { id: "g3_logconcept", label: "Logging- und Audit-Konzept", source: "gate_3", fixed: "", placeholder: "Zu protokollieren — Auswahl: Zugriff; Policy-Entscheidung; Modell-/Tool-Aufruf; Ingestion; abgelehnter Zugriff; Human Review; Konfigurationsänderung; Kosten/Nutzung; Incident" },
+        { id: "g3_logevents", label: "Zu protokollierende Ereignisse (Mehrfachauswahl)", source: "gate_3", fixed: "", placeholder: "Auswahl: Authentifizierungs- und Zugriffsereignisse; Policy-Entscheidungen; Modell- und Tool-Aufrufe; Dokumenten-Ingestion; abgelehnte Zugriffe; Human-Review-Entscheidungen; Modell-, Prompt- und Konfigurationsänderungen; Kosten, Token und Nutzung; Incidents und Findings" },
+        { id: "g3_monitoring", label: "Monitoring und Alerts", source: "gate_3", fixed: "", placeholder: "Beschreibe überwachte Qualitäts-, Sicherheits-, Nutzungs- und Kostenereignisse sowie zugehörige Schwellenwerte und Empfänger." },
+        { id: "g3_siem", label: "SIEM- oder zentrale Observability-Anbindung", source: "gate_3", fixed: "", optional: true, placeholder: "Auswahl: vorhanden; geplant; nicht erforderlich (mit Begründung)" },
+        { id: "g3_incident", label: "Incident- und Eskalationsprozess", source: "gate_3", fixed: "", placeholder: "Beschreibe Erkennung, Verantwortliche, Eskalationswege, Reaktionszeit und Dokumentation." },
+        { id: "g3_degraded", label: "Technischer Fallback / Degraded Mode", source: "gate_3", fixed: "", optional: true, placeholder: "Beschreibe das Verhalten bei Modell-/Dienstausfall (Degraded Mode, manueller Ersatzprozess)." },
+        { id: "g3_versioning", label: "Prompt-, Modell- und Konfigurationsversionierung", source: "gate_3", fixed: "", placeholder: "Beschreibe Versionierung, Freigabestatus, Rollback und Re-Approval-Trigger." },
+      ],
+    },
+    {
+      title: "Dependencies, Evidence & Gate Decision",
+      fields: [
+        { id: "g3_evidence", label: "Nachweise und Anhänge", source: "none", fixed: "", optional: true, kind: "evidence", docs: GATE3_DOCS },
+        { id: "g3_auflagen", label: "Verbindliche Auflagen für Gate 4", source: "gate_3", fixed: "", placeholder: "Dokumentiere verbleibende Vorgaben, die vor Pilot oder Go-Live umgesetzt und nachgewiesen werden müssen, z. B. Penetrationstest, finale IAM-Konfiguration, DLP-Validierung, Monitoring-Schwellenwerte oder Behebung offener Findings." },
+        { id: "g3_begruendung", label: "Gate 3 Entscheidungsbegründung", source: "gate_3", fixed: "", placeholder: "Fasse zusammen, wie das Solution Design die Gate-2-Vorgaben technisch umsetzt. Begründe Modellroute, Zugriffskontrollen, Daten- und Retrieval-Schutz, Logging, Monitoring und die für Gate 4 verbleibenden Auflagen." },
       ],
     },
   ],
   4: [
     {
-      title: "Pilot & Tests",
+      title: "Implementation Conformance",
       fields: [
-        { id: "g4_tests", label: "Funktions-, Integrations- und Sicherheitstests", source: "none", fixed: "" },
-        { id: "g4_quality", label: "Qualitäts- und Evaluationskriterien", source: "none", fixed: "" },
-        { id: "g4_controls", label: "Daten-, Rollen- und Zugriffskontrollen (Wirksamkeit)", source: "none", fixed: "" },
+        { id: "g4_implstatus", label: "Implementierungsstatus", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Wähle den aktuellen Umsetzungs- und Readiness-Status des AI Service. Drop Down: nicht begonnen; in Umsetzung; technisch umgesetzt; pilotbereit; produktionsbereit" },
+        { id: "g4_implbeschreibung", label: "Beschreibung des aktuellen Implementierungsstands", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Beschreibe, welche Komponenten produktiv umgesetzt sind, welche Funktionen bereits getestet wurden und welche Restarbeiten vor Pilot oder Go-Live bestehen." },
+        { id: "g4_abweichungen", label: "Abweichungen vom freigegebenen Solution Design", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Beschreibe alle Abweichungen vom Gate-3-Solution-Design. Falls keine Abweichung besteht, trage „Keine Abweichungen“ ein." },
+        { id: "g4_umgesetztesysteme", label: "Umgesetzte Systeme, Datenquellen und Integrationen (Mehrfachauswahl)", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Wähle alle tatsächlich umgesetzten Systeme, Datenquellen und Integrationen aus." },
+        { id: "g4_umsetzungsnachweis", label: "Umsetzungsnachweis / Deployment-Referenz", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", kind: "upload", uploadHint: "Lade Deployment- oder Release-Dokumentation als Umsetzungsnachweis hoch." },
       ],
     },
     {
-      title: "Betriebsübergabe",
+      title: "Test & Evaluation Evidence",
       fields: [
-        { id: "g4_monitoring", label: "Monitoring, Logging, Alerts, Incident-Prozess", source: "none", fixed: "" },
-        { id: "g4_rollback", label: "Fallback, Rollback und Betriebsübergabe", source: "none", fixed: "" },
-        { id: "g4_support", label: "Pilotgruppe, Training und Support", source: "none", fixed: "" },
+        { id: "g4_funktionstests", label: "Funktionstests", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Fasse getestete Kernfunktionen, Testergebnis und verbleibende Fehler zusammen. Verknüpfe den vollständigen Testreport als Nachweis." },
+        { id: "g4_funktionstests_nw", label: "Test Nachweis", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", kind: "upload", uploadHint: "Funktionstestbericht" },
+        { id: "g4_integrationstests", label: "Integrations- und End-to-End-Tests", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Beschreibe getestete End-to-End-Flows zwischen Frontend, Gateway, Modell, Retrieval, Datenquelle, Logging und Human Review." },
+        { id: "g4_integrationstests_nw", label: "Test Nachweis", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", kind: "upload", uploadHint: "Integrationstestbericht" },
+        { id: "g4_securitytests", label: "Security- und Zugriffstests", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Beschreibe Rollen-, Rechte-, Authentifizierungs- und Zugriffstests einschließlich negativer Tests für unberechtigte Nutzer." },
+        { id: "g4_securitytests_nw", label: "Test Nachweis", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", kind: "upload", uploadHint: "Security- und Zugriffstestbericht" },
+        { id: "g4_dlptests", label: "Daten- und DLP-Tests", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Beschreibe Tests zu Datenklassifikation, DLP, Redaction, Retrieval-Filtern, Indexierungsregeln und Datenübertragung." },
+        { id: "g4_dlptests_nw", label: "Test Nachweis", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", kind: "upload", uploadHint: "DLP-/Datenkontrolltestbericht" },
+        { id: "g4_qualitaet", label: "Qualitäts- und Evaluationskriterien", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", kind: "matrix", columns: [
+          { label: "Qualitätsmetrik", hint: "z. B. Quellenabdeckung" },
+          { label: "Zielwert", hint: "z. B. ≥ 95 %" },
+          { label: "gemessener Wert", hint: "z. B. 97 %" },
+          { label: "Status", hint: "erfüllt / nicht erfüllt" },
+        ] },
+        { id: "g4_testdatensatz", label: "Testdatensatz / Nachweis", source: "gate_input", inputRole: "AI Owner", fixed: "", kind: "upload", uploadHint: "Evaluations-/TEVV-Report inkl. Testdatensatz" },
+        { id: "g4_hitltest", label: "Human-Oversight-Test", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Beschreibe, wie Review Queue, Eskalation, Freigabe, Ablehnung und Audit Trail getestet wurden." },
+        { id: "g4_hitltest_nw", label: "Test Nachweis", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", kind: "upload", uploadHint: "Human-Oversight-Testnachweis" },
+      ],
+    },
+    {
+      title: "Pilot & User Readiness",
+      fields: [
+        { id: "g4_pilotscope", label: "Pilot- oder Rollout-Scope", source: "gate_input", inputRole: "AI Owner", fixed: "", placeholder: "Beschreibe Organisationseinheiten, Länder, Nutzergruppen, Datenklassen, Funktionen und Laufzeit des geplanten Piloten oder Rollouts." },
+        { id: "g4_pilotgruppe", label: "Pilotgruppe / Nutzerkreis (Mehrfachauswahl)", source: "gate_input", inputRole: "AI Owner", fixed: "", placeholder: "Wähle die für Pilot oder Go-Live zugelassenen Rollen und Organisationseinheiten." },
+        { id: "g4_training", label: "Nutzerinformation und Training", source: "gate_input", inputRole: "AI Owner", fixed: "", placeholder: "Beschreibe Einweisung, Nutzungsgrenzen, Do-not-use-Szenarien, Datenhinweise und verfügbare Trainingsmaterialien." },
+        { id: "g4_support", label: "Support- und Feedbackprozess", source: "gate_input", inputRole: "AI Owner", fixed: "", placeholder: "Beschreibe Supportkanal, verantwortliche Rolle, Reaktionszeit, Feedbackerfassung und Eskalation bei kritischen Problemen." },
+        { id: "g4_erfolgskriterien", label: "Erfolgskriterien für Pilot oder Go-Live", source: "gate_input", inputRole: "AI Owner", fixed: "", kind: "matrix", columns: [
+          { label: "Kriterium", hint: "messbares Erfolgskriterium" },
+          { label: "Zielwert", hint: "z. B. ≥ 70 %" },
+          { label: "Messmethode", hint: "z. B. Telemetrie" },
+          { label: "verantwortliche Rolle", hint: "z. B. AI Owner" },
+          { label: "Bewertungszeitpunkt", hint: "z. B. nach 3 Monaten" },
+        ] },
+      ],
+    },
+    {
+      title: "Operational Readiness",
+      fields: [
+        { id: "g4_betriebsowner", label: "Betriebsowner und Supportverantwortung", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Person Picker: Benenne den technischen Betriebsowner, Supportverantwortliche und Eskalationsvertretung." },
+        { id: "g4_monitoringaktiv", label: "Monitoring und Alerting aktiv?", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Drop Down: vollständig aktiv / teilweise aktiv / noch nicht aktiv. Beschreibe aktive Qualitäts-, Sicherheits-, Nutzungs-, Kosten- und Verfügbarkeitsalarme." },
+        { id: "g4_incidenttest", label: "Incident- und Eskalationsprozess getestet", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Drop Down: getestet und bestätigt; teilweise getestet; nicht getestet" },
+        { id: "g4_incidenttest_nw", label: "Test Nachweis", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", kind: "upload", uploadHint: "Beschreibe das getestete Incident-Szenario, beteiligte Rollen, Reaktionszeit und dokumentiertes Ergebnis." },
+        { id: "g4_fallbacktest", label: "Fallback / Rollback getestet", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Drop Down: getestet und erfolgreich; teilweise getestet; nicht getestet; nicht anwendbar mit Begründung. Beschreibe Fallback-Modell, manuellen Ersatzprozess, Rollback-Ablauf und Testergebnis." },
+        { id: "g4_quotas", label: "Quotas, Budget Guards und Kapazität", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", kind: "matrix", columns: [
+          { label: "monatliches Budgetlimit", hint: "z. B. 2.500 €" },
+          { label: "Token-/Anfragelimit", hint: "z. B. 5 Mio. Token" },
+          { label: "Rate Limits", hint: "z. B. 60 req/min" },
+          { label: "erwartete Nutzerzahl", hint: "z. B. 40" },
+          { label: "Kapazitätsreserve", hint: "z. B. 30 %" },
+          { label: "Eskalation bei Überschreitung", hint: "z. B. Alert an Betrieb" },
+        ] },
+        { id: "g4_reapprovaltrigger", label: "Review- und Re-Approval-Trigger (Mehrfachauswahl)", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Wähle alle Änderungen oder Ereignisse aus, die eine erneute Freigabe auslösen." },
+        { id: "g4_stilllegungsvorb", label: "Lösch-, Aufbewahrungs- und Stilllegungsvorbereitung", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Beschreibe Aufbewahrungsfristen, Löschwege für Dokumente, Chunks, Indizes, Logs und Secrets sowie die technische Stilllegung." },
+      ],
+    },
+    {
+      title: "Evidence & Gate Decision",
+      fields: [
+        { id: "g4_evidence", label: "Nachweise und Anhänge", source: "none", fixed: "", optional: true, kind: "evidence", docs: GATE4_DOCS },
+        { id: "g4_freigabetyp", label: "Gate 4 Entscheidung: Freigabetyp", source: "gate_4", fixed: "", placeholder: "Drop Down: Pilot freigegeben; Pilot unter Auflagen freigegeben; Go-Live freigegeben; Go-Live unter Auflagen freigegeben; Änderungen erforderlich; Eskalation; Ablehnung" },
+        { id: "g4_freigabescope", label: "Gate 4 Entscheidung: Freigegebener Scope (bei Freigabe)", source: "gate_4", fixed: "", placeholder: "Dokumentiere freigegebene Nutzergruppen, Organisationseinheiten, Länder, Datenklassen, Funktionen, Modelle, Integrationen und zeitliche Begrenzungen." },
+        { id: "g4_betriebsauflagen", label: "Gate 4 Entscheidung: Verbindliche Betriebsauflagen (bei bedingter Freigabe)", source: "gate_4", fixed: "", placeholder: "Formuliere konkrete, überprüfbare Auflagen mit verantwortlicher Rolle und Fälligkeit." },
+        { id: "g4_kpiset", label: "Gate 4 Entscheidung: KPI- und Monitoring-Set (Mehrfachauswahl)", source: "gate_4", fixed: "", placeholder: "Wähle die für Gate 5 verbindlich zu überwachenden KPIs und definiere Schwellenwerte." },
+        { id: "g4_naechsterreview", label: "Gate 4 Entscheidung: Nächster Reviewtermin", source: "gate_4", fixed: "", placeholder: "Datum" },
+        { id: "g4_begruendung", label: "Gate 4 Entscheidungsbegründung", source: "gate_4", fixed: "", placeholder: "Bei Freigabe: Begründe, warum Umsetzung, Tests, Kontrollen, Betrieb und Nutzerbefähigung für den freigegebenen Scope ausreichend sind. Nenne verbleibende Auflagen. Bei Änderungen: Beschreibe konkret, welche Tests, Nachweise, Kontrollen oder Betriebsanforderungen fehlen und wer diese bis wann nachreichen muss. Bei Ablehnung: Begründe, warum wesentliche Voraussetzungen nicht erfüllt sind und eine sichere Pilotierung oder produktive Nutzung nicht vertretbar ist." },
       ],
     },
   ],
   5: [
     {
       title: "Review-Kontext",
+      preface: true,
       fields: [
-        { id: "g5_reviewart", label: "Review-Art", source: "gate_5", fixed: "Planmäßiger Review" },
-        { id: "g5_zeitraum", label: "Review-Zeitraum", source: "gate_5", fixed: "" },
+        { id: "g5_reviewart", label: "Review-Art", source: "gate_5", fixed: "", placeholder: "Wähle den Auslöser dieser Gate-5-Prüfung. Drop-Down: planmäßiger Review; ereignisgetriebener Review; Incident Review; Change Review; Kosten-/Kapazitätsreview; Qualitätsreview; Stilllegungsreview" },
+        { id: "g5_zeitraum", label: "Review-Zeitraum", source: "gate_5", fixed: "", placeholder: "Wähle den ausgewerteten Betriebszeitraum. (von-bis-Datum-Picker)" },
       ],
     },
     {
       title: "Value, Adoption & Portfolio Fit",
       fields: [
-        { id: "g5_activeusers", label: "Aktive Nutzer im Reviewzeitraum", source: "system", fixed: "32 von 40 Pilotnutzern aktiv · 80 % Adoption · Zielwert 70 %" },
-        { id: "g5_volume", label: "Anfrage- oder Prozessvolumen", source: "system", fixed: "1.280 Anfragen im Reviewzeitraum · durchschnittlich 6,7 Anfragen je aktivem Nutzer und Woche" },
-        { id: "g5_nutzen", label: "Nutzen und Adoption", source: "none", fixed: "" },
-        { id: "g5_quality", label: "Qualität und Zuverlässigkeit", source: "none", fixed: "" },
-        { id: "g5_risk", label: "Risiko-, Compliance- und Security-Kontrollen", source: "none", fixed: "" },
-        { id: "g5_costs", label: "Kosten, Kapazität und Nutzung", source: "none", fixed: "" },
-        { id: "g5_changes", label: "Änderungen an Zweck/Daten/Modell/Rollen", source: "none", fixed: "" },
+        { id: "g5_activeusers", label: "Aktive Nutzer im Reviewzeitraum", source: "system", fixed: "32 von 40 Pilotnutzern aktiv · 80 % Adoption · Zielwert 70 %", optional: true },
+        { id: "g5_volume", label: "Anfrage- oder Prozessvolumen", source: "system", fixed: "1.280 Anfragen im Reviewzeitraum · durchschnittlich 6,7 Anfragen je aktivem Nutzer und Woche", optional: true },
+        { id: "g5_realnutzen", label: "Realisierter Nutzen", source: "gate_input", inputRole: "AI Owner", fixed: "", placeholder: "Beschreibe den tatsächlich realisierten fachlichen Nutzen und belege ihn mit Messwerten oder Nutzerfeedback." },
+        { id: "g5_hyp_evidenz", label: "Nutzenhypothese versus Evidenz", source: "system", fixed: "", optional: true, kind: "matrix", columns: [
+          { label: "ursprüngliche Nutzenhypothese", value: "Hypothese: 30 % geringerer Rechercheaufwand." },
+          { label: "aktueller Messwert", value: "Gemessen: 38,9 % Reduktion" },
+          { label: "Status", value: "erreicht / teilweise erreicht / nicht erreicht" },
+        ] },
+        { id: "g5_feedback", label: "Nutzerfeedback und Beschwerden", source: "gate_input", inputRole: "AI Owner", fixed: "", placeholder: "Fasse positives Feedback, wiederkehrende Probleme, Beschwerden und gewünschte Verbesserungen zusammen." },
+        { id: "g5_feedback_nw", label: "Feedback Nachweis", source: "gate_input", inputRole: "AI Owner", fixed: "", optional: true, kind: "upload", uploadHint: "Nutzerfeedback-Auswertung als Nachweis" },
+        { id: "g5_portfolio", label: "Portfolio-Relevanz und strategischer Fit", source: "gate_5", fixed: "", optional: true, placeholder: "Bewerte, ob der AI Service weiterhin zur AI-First-Strategie und zum Portfolioziel beiträgt. Drop-Down: hoher strategischer Beitrag; mittlerer Beitrag; geringer Beitrag; strategischer Fit nicht mehr gegeben" },
+      ],
+    },
+    {
+      title: "Quality, Reliability & Human Oversight",
+      fields: [
+        { id: "g5_antwortqualitaet", label: "Fachliche Antwortqualität", source: "system", fixed: "88 % fachlich korrekte Antworten · Ziel ≥ 85 % · Trend stabil", optional: true },
+        { id: "g5_quellen", label: "Quellenabdeckung und Zitierqualität", source: "system", fixed: "97 % der Antworten enthalten mindestens eine freigegebene Quelle · Ziel ≥ 95 %", optional: true },
+        { id: "g5_halluzination", label: "Kritische Fehlantworten / Halluzinationen", source: "system", fixed: "0 kritische Halluzinationen · 6 nicht-kritische fachliche Korrekturen", optional: true },
+        { id: "g5_latenz", label: "Latenz und Verfügbarkeit", source: "system", fixed: "P95-Latenz 6,4 Sekunden · Ziel < 8 Sekunden · Verfügbarkeit 99,6 %", optional: true },
+        { id: "g5_humanreviewfaelle", label: "Human-Review-Fälle", source: "system", fixed: "Anzahl Fälle · bestätigt · abgelehnt · überfällig · durchschnittliche Bearbeitungszeit", optional: true },
+        { id: "g5_oversightwirksam", label: "Wirksamkeit der Human-Oversight-Regel", source: "gate_5", fixed: "", optional: true, placeholder: "Drop Down: wirksam; teilweise wirksam; nicht wirksam; nicht ausreichend beurteilbar. Begründe, ob Review, Eskalation und Freigabe die vorgesehenen Risiken tatsächlich kontrollieren." },
+      ],
+    },
+    {
+      title: "Risk, Compliance, Security & Incidents",
+      fields: [
+        { id: "g5_policyverstoss", label: "Policy-Verstöße und blockierte Zugriffe", source: "system", fixed: "27 blockierte Zugriffe auf nicht freigegebene Daten · 0 erfolgreiche Policy-Umgehungen", optional: true },
+        { id: "g5_incidents", label: "Incidents und Security Findings", source: "system", fixed: "0 kritische · 1 mittleres Finding geschlossen · 2 niedrige Findings offen", optional: true },
+        { id: "g5_compliancefindings", label: "Datenschutz- oder Compliance-Findings", source: "gate_5", fixed: "", optional: true, placeholder: "Dokumentiere relevante Datenschutz-, Compliance- oder Governance-Findings und ihren Bearbeitungsstatus." },
+        { id: "g5_auflagenstatus", label: "Status früherer Auflagen", source: "system", fixed: "Auflagenliste mit Status: erfüllt; in Bearbeitung; überfällig; nicht mehr anwendbar", optional: true },
+        { id: "g5_kontrollwirksamkeit", label: "Kontrollwirksamkeit", source: "gate_5", fixed: "", kind: "matrix", columns: [
+          { label: "Kontrollname", hint: "z. B. DLP-Gateway" },
+          { label: "Sollvorgabe", hint: "erwartete Wirkung" },
+          { label: "Bewertung", hint: "wirksam / teilweise wirksam / unwirksam" },
+          { label: "aktueller Nachweis", upload: true },
+        ] },
+      ],
+    },
+    {
+      title: "Cost, Capacity & Vendor",
+      fields: [
+        { id: "g5_gesamtkosten", label: "Gesamtkosten im Reviewzeitraum", source: "system", fixed: "Ist-Kosten · Budget · Abweichung · Trend", optional: true },
+        { id: "g5_kostenproanfrage", label: "Kosten je Anfrage oder Prozess", source: "system", fixed: "3,79 € je 1.000 Anfragen inklusive Search- und Modellkosten", optional: true },
+        { id: "g5_kapazitaet", label: "Kapazität und Performance", source: "system", fixed: "KPI · Beschreibe Kapazitätsengpässe, Skalierungsbedarf oder Performance-Risiken.", optional: true },
+        { id: "g5_abhaengigkeiten", label: "Anbieter-, Modell- und Plattformabhängigkeiten", source: "gate_input", inputRole: "Umsetzung & Betrieb", fixed: "", placeholder: "Beschreibe kritische Anbieter-, Modell-, Plattform- oder Lizenzabhängigkeiten und mögliche Exit-/Fallback-Optionen." },
+        { id: "g5_vendorentwicklung", label: "Vendor-, Modell- oder Plattformentwicklung", source: "system", fixed: "Ereignisliste: Modellversion abgekündigt; Preismodell geändert; Region oder Hosting geändert; neue Vertragsbedingungen; API- oder MCP-Schnittstelle geändert; relevante Security Advisory", optional: true },
+      ],
+    },
+    {
+      title: "Change & Re-Approval Assessment",
+      fields: [
+        { id: "g5_aenderungen", label: "Festgestellte Änderungen seit letzter Freigabe (Mehrfachauswahl)", source: "gate_5", fixed: "", placeholder: "Drop Down: Zweck geändert; Nutzerkreis erweitert; neue Organisationseinheit / neues Land; neue Datenquelle; höhere Datenklasse; neues Modell / Deployment; wesentliche Modellversion; neue Prompt- oder Agentenlogik; neue Integration; neues Tool / neuer MCP-Server; höherer Automatisierungsgrad; Human-Oversight-Level geändert; Betriebsmodell geändert; keine relevante Änderung" },
+        { id: "g5_aenderungsbeschreibung", label: "Beschreibung der Änderungen", source: "gate_input", inputRole: "AI Owner", fixed: "", optional: true, placeholder: "Beschreibe Umfang, Grund und erwartete Auswirkung der Änderung auf Zweck, Daten, Modell, Nutzer, Kontrollen und Betrieb." },
+        { id: "g5_reapprovalempfehlung", label: "Automatische Re-Approval-Empfehlung", source: "system", fixed: "kein Re-Approval erforderlich; Re-Approval ab Gate 2 empfohlen; Re-Approval ab Gate 3 empfohlen; Re-Approval ab Gate 4 empfohlen; sofortige Eskalation empfohlen", optional: true },
+        { id: "g5_reapproval", label: "Re-Approval erforderlich", source: "gate_5", fixed: "", placeholder: "nein; ja, zurück zu Gate 2; ja, zurück zu Gate 3; ja, zurück zu Gate 4; Eskalation. Begründe, warum die Änderung innerhalb der bisherigen Freigabe bleibt oder welches Gate erneut durchlaufen werden muss." },
+        { id: "g5_schutzmassnahme", label: "Temporäre Schutzmaßnahme bis zur Entscheidung (Mehrfachauswahl)", source: "gate_5", fixed: "", optional: true, placeholder: "Drop Down: keine; Nutzerkreis einschränken; Datenquelle sperren; höhere Datenklasse sperren; Modellroute sperren; Tool-/MCP-Zugriff deaktivieren; Human Review verschärfen; nur manueller Fallback; Service pausieren" },
+      ],
+    },
+    {
+      title: "Evidence & Lifecycle Decision",
+      fields: [
+        { id: "g5_evidence", label: "Nachweise und Anhänge", source: "none", fixed: "", optional: true, kind: "evidence", docs: GATE5_DOCS },
+        { id: "g5_lifecycle", label: "Lifecycle-Status", source: "gate_5", fixed: "", placeholder: "Weiterbetrieb; Weiterbetrieb unter Auflagen; Nachschärfung ohne vollständiges Re-Approval; Re-Approval ab Gate 2; Re-Approval ab Gate 3; Re-Approval ab Gate 4; temporär pausieren; stilllegen" },
+        { id: "g5_auflagen", label: "Verbindliche Auflagen", source: "gate_5", fixed: "", optional: true, placeholder: "Formuliere konkrete Maßnahmen, verantwortliche Rollen, Nachweise und Fristen für den weiteren Betrieb." },
+        { id: "g5_naechsterreview", label: "Nächster Reviewtermin", source: "gate_5", fixed: "", optional: true, placeholder: "Datum" },
+        { id: "g5_begruendung", label: "Gate 5 Entscheidungsbegründung", source: "gate_5", fixed: "", placeholder: "bei Weiterbetrieb: Begründe anhand von Nutzen, Qualität, Risiko, Kosten und Kontrollwirksamkeit, warum der AI Service weiterbetrieben werden kann. bei Re-Approval: Beschreibe die wesentliche Änderung oder Risikolage, das erforderliche Ziel-Gate und temporäre Schutzmaßnahmen. bei Pausierung: Begründe die unmittelbare Pausierung und definiere Voraussetzungen für eine Wiederaufnahme. bei Stilllegung: Begründe die Stilllegung und dokumentiere Datenlöschung, Deaktivierung von Zugängen, Abschlusskontrollen und Aktualisierung des AI Registers." },
+      ],
+    },
+    {
+      title: "Stilllegungsplan (nur wenn „stilllegen“ ausgewählt)",
+      fields: [
+        { id: "g5_stilllegungsdatum", label: "Stilllegungsdatum", source: "gate_5", fixed: "", optional: true, placeholder: "Datum" },
+        { id: "g5_schnittstellen", label: "Zu deaktivierende Schnittstellen und Zugänge (Mehrfachauswahl)", source: "gate_5", fixed: "", optional: true, placeholder: "Liste APIs, MCP-Server, Modellrouten, Service Accounts, Rollen und Frontends auf, die deaktiviert werden." },
+        { id: "g5_datenbehandlung", label: "Daten-, Index- und Logbehandlung", source: "gate_5", fixed: "", optional: true, placeholder: "Beschreibe Löschung, Archivierung oder Aufbewahrung von Dokumenten, Chunks, Vektorindizes, Logs und Backups." },
+        { id: "g5_secrets", label: "Secrets und technische Ressourcen", source: "gate_5", fixed: "", optional: true, placeholder: "Beschreibe Widerruf von Secrets, Zertifikaten, Deployments, Quotas und Cloud-Ressourcen." },
+        { id: "g5_kommunikation", label: "Nutzer- und Stakeholder-Kommunikation", source: "gate_5", fixed: "", optional: true, placeholder: "Beschreibe Information der Nutzer, Fachbereiche, Governance-Rollen und Supportverantwortlichen." },
+        { id: "g5_abschlussnachweis", label: "Abschluss Nachweis", source: "gate_5", fixed: "", optional: true, kind: "upload", uploadHint: "Deaktivierungsprotokoll, Lösch-/Archivierungsnachweis, Kostenabschluss, Aktualisierung des AI Registers, Abschlussbewertung" },
       ],
     },
   ],
@@ -362,6 +610,26 @@ export const INHERITED_CONSTRAINTS: Partial<Record<GateId, InheritedConstraint[]
       value: "Nur C0/C1 unter Gateway-, DLP- und Redaction-Auflagen",
       fromGate: 2,
     },
+    {
+      label: "Human-Oversight-Level",
+      value: "Review vor C3-Indexierung und bei Ausnahmen; Stichproben für C1/C2",
+      fromGate: 2,
+    },
+    {
+      label: "Verbindliche Mindestkontrollen",
+      value: "RBAC, DLP, Classification Tags, Retrieval Filter, HITL, Logging, Model Routing",
+      fromGate: 2,
+    },
+    {
+      label: "Offene Auflagen",
+      value: "Rollenmatrix, Chunk-Filter und C3-DLP-Test noch nachzuweisen",
+      fromGate: 2,
+    },
+    {
+      label: "Eskalationsstatus",
+      value: "Keine; Re-Eskalation bei C4, externem Modell oder Zweckänderung",
+      fromGate: 2,
+    },
   ],
   4: [
     {
@@ -386,21 +654,51 @@ export const INHERITED_CONSTRAINTS: Partial<Record<GateId, InheritedConstraint[]
       value: "DLP-Gateway, Prompt-/Output-Logging, rollenbasierter Zugriff, Human-Review für C3.",
       fromGate: 3,
     },
+    {
+      label: "Logging-/Monitoring-Vorgaben",
+      value: "Gateway-Logs und SIEM-Anbindung; Protokollierung von Zugriff, Policy-Entscheidungen, Modell-/Tool-Aufrufen, Human Review und Incidents.",
+      fromGate: 3,
+    },
+    {
+      label: "Human-Oversight-Umsetzung",
+      value: "Human Review vor C3-Indexierung und bei Ausnahmen; Stichprobenprüfung für C1/C2.",
+      fromGate: 3,
+    },
+    {
+      label: "Technische Auflagen",
+      value: "Penetrationstest, finale IAM-Konfiguration und C3-DLP-Validierung vor Go-Live nachzuweisen.",
+      fromGate: 3,
+    },
+    {
+      label: "Offene Abhängigkeiten",
+      value: "Rollenmatrix, Chunk-Filter und C3-DLP-Test noch offen.",
+      fromGate: 3,
+    },
   ],
   5: [
     {
       label: "Freigabestatus",
-      value: "Pilot unter Auflagen freigegeben",
+      value: "Go-Live unter Auflagen freigegeben",
       fromGate: 4,
     },
     {
-      label: "Offene Auflagen aus Go-Live",
-      value: "Quartalsweises Kosten-/Kapazitätsreview; Re-Evaluation der Modellroute nach 6 Monaten.",
+      label: "Freigegebener Scope",
+      value: "Interne Wissensarbeit für freigegebene Fachbereiche; Datenklassen C1–C3; Standard-Modellroute über Gateway.",
       fromGate: 4,
     },
     {
-      label: "Betriebsübergabe",
-      value: "Betrieb durch Plattform-Team; Incident-Prozess aktiv; Monitoring-Dashboard live.",
+      label: "Verbindliche Betriebsauflagen",
+      value: "Quartalsweises Kosten-/Kapazitätsreview; Re-Evaluation der Modellroute nach 6 Monaten; aktiver Incident-Prozess.",
+      fromGate: 4,
+    },
+    {
+      label: "KPI- und Monitoring-Set",
+      value: "Antwortqualität, Quellenabdeckung, Halluzinationsrate, Latenz/Verfügbarkeit, Kosten je Anfrage, Human-Review-Durchsatz.",
+      fromGate: 4,
+    },
+    {
+      label: "Nächster Reviewtermin",
+      value: "Planmäßiger Gate-5-Review nach 3 Monaten Produktivbetrieb.",
       fromGate: 4,
     },
   ],
@@ -428,6 +726,7 @@ export function buildGateFields(
         note: "",
         required: !bp.optional,
         placeholder: bp.placeholder,
+        inputRole: bp.inputRole,
       });
     }
   }

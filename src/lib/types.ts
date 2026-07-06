@@ -58,6 +58,7 @@ export type CriterionStatus = "met" | "open" | "problem" | "unchecked";
 export type FieldSource =
   | "ai_request"
   | `gate_${number}`
+  | "gate_input" // Eingabe eines Owner-/Betriebs-Teams für dieses Gate — §7 Gate 4/5
   | "system" // systemgenerierter Wert (z. B. Telemetrie) — §7 Gate 5
   | "none";
 
@@ -102,6 +103,7 @@ export interface ReviewFieldData {
   note: string;
   required?: boolean; // shows the "*" marker; defaults to true when undefined
   placeholder?: string; // hint for editable (gate-decision / free) fields
+  inputRole?: string; // for "gate_input": responsible role (e.g. "AI Owner") — §7 Gate 4/5
 }
 
 // A row in a gate's "Nachweise und Anhänge" evidence table — §7
