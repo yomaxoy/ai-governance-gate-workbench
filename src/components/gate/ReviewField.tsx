@@ -9,7 +9,7 @@ import {
   Upload,
 } from "lucide-react";
 import type { EvidenceDoc, ReviewDecision, ReviewFieldData } from "@/lib/types";
-import type { ControlImpl, MatrixCell } from "@/lib/gate-config";
+import type { ControlImpl, FieldKind, MatrixCell } from "@/lib/gate-config";
 import { DECISION_META, fieldNeedsNote } from "@/lib/workflow";
 
 // A field's value is reviewer-editable when it is decided at *this* gate
@@ -220,7 +220,7 @@ export function ReviewField({
   readOnly: boolean;
   onChange: (patch: Partial<ReviewFieldData>) => void;
   docs?: EvidenceDoc[];
-  kind?: "field" | "evidence" | "upload" | "control" | "matrix";
+  kind?: FieldKind;
   uploadHint?: string;
   control?: ControlImpl;
   columns?: MatrixCell[];

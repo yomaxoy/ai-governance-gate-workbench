@@ -134,6 +134,12 @@ export const GATE_CRITERIA: Record<GateId, string[]> = {
 };
 
 // --- Review-field section blueprints per gate ---------------
+// How a review field renders its value —
+// "field" → value box / textarea; "evidence" → dropzone + document table;
+// "upload" → single dropzone; "control" → control-implementation card;
+// "matrix" → labelled multi-cell grid (Kriterien-/Kennzahltabellen — §7 Gate 4/5).
+export type FieldKind = "field" | "evidence" | "upload" | "control" | "matrix";
+
 // Each field references a key in AiRequestData (or a synthetic value) plus a source.
 interface FieldBlueprint {
   id: string;
@@ -145,10 +151,7 @@ interface FieldBlueprint {
   optional?: boolean; // no "*" marker
   placeholder?: string; // hint for editable gate-decision / free fields
   inputRole?: string; // for source "gate_input": responsible role — §7 Gate 4/5
-  // "evidence" → dropzone + document table; "upload" → single dropzone;
-  // "control" → control-implementation card (Komponente/Rolle/Umsetzung/Nachweis);
-  // "matrix" → labelled multi-cell grid (Kriterien-/Kennzahltabellen — §7 Gate 4/5)
-  kind?: "field" | "evidence" | "upload" | "control" | "matrix";
+  kind?: FieldKind;
   docs?: EvidenceDoc[]; // document rows for an evidence block
   uploadHint?: string; // caption for a single-file upload field
   control?: ControlImpl; // sub-inputs for a control-implementation card

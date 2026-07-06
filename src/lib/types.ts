@@ -106,13 +106,24 @@ export interface ReviewFieldData {
   inputRole?: string; // for "gate_input": responsible role (e.g. "AI Owner") — §7 Gate 4/5
 }
 
+// Pflichtstatus of an evidence row — §7
+export type EvidenceRequirement = "Pflicht" | "Optional";
+
+// Reviewstatus of an evidence row — §7
+export type EvidenceStatus =
+  | "Akzeptiert"
+  | "Eingereicht"
+  | "In Prüfung"
+  | "Fehlt"
+  | "Nicht vorhanden";
+
 // A row in a gate's "Nachweise und Anhänge" evidence table — §7
 export interface EvidenceDoc {
   name: string; // Dokumentname
   origin: string; // Herkunft, e.g. "AI Request" / "Gate 1"
-  requirement: string; // Pflichtstatus: "Pflicht" | "Optional"
+  requirement: EvidenceRequirement; // Pflichtstatus
   submittedBy: string; // Eingereicht durch
-  status: string; // Reviewstatus, e.g. "Eingereicht" / "Fehlt"
+  status: EvidenceStatus; // Reviewstatus
 }
 
 export interface CriterionData {
@@ -135,6 +146,19 @@ export interface UsageCost {
   tokenLimitM: number; // monthly token limit, in millions
   costMonth: number; // € spent this month
   costLimit: number; // € monthly cost limit
+  // AI-Register "Nutzung & Kosten" tab — value indicators (optional demo data)
+  adoptionTargetPct?: number; // Adoption-Zielwert in %
+  estimatedValueMonth?: number; // geschätzter Wertbeitrag € / Monat
+  valueLever?: string; // primärer Nutzenhebel
+  ownerAssessment?: string; // Business-Owner-Bewertung
+}
+
+// A row in the AI-Register "Risiko & Audit" tab audit trail — §5.5
+export interface AuditEntry {
+  date: string; // Datum
+  event: string; // z. B. "Gate 4 Pilotfreigabe"
+  actor: string; // Bearbeiter, z. B. "Gatekeeper 4"
+  action: string; // Aktion, z. B. "Pilot unter Auflagen freigegeben"
 }
 
 export interface Initiative {
@@ -160,6 +184,9 @@ export interface Initiative {
   nextReview: string; // Nächstes Review (display date)
   openAuflagen: number; // Offene Auflagen
   criticalFindings: number; // Kritische Findings
+  openFindings?: number; // Offene Findings (Risiko & Audit) — falls abweichend von kritischen
+  auditTrail?: AuditEntry[]; // Audit Trail (Risiko & Audit)
+  auditTotal?: number; // Gesamtzahl Audit-Einträge (für "Zeige N von M")
   changesSinceApproval: string; // Änderungen seit letzter Freigabe
   gateDecisionSummary: string; // Zusammenfassung der letzten Gate-Entscheidung
   nextStep: string; // Nächster erwarteter Schritt

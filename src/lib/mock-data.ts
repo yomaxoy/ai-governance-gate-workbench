@@ -4,6 +4,7 @@
 import { buildGateFields, GATE_CRITERIA } from "./gate-config";
 import type {
   AiRequestData,
+  AuditEntry,
   CriterionData,
   CurrentUser,
   DraftItem,
@@ -84,6 +85,49 @@ function seedReviews(
   }
   return out;
 }
+
+// Fill in demo values for specific review fields (single source of truth for
+// both the Gate Workbench and the AI-Register detail tabs) — §5.5.
+function withFieldValues(
+  reviews: Partial<Record<GateId, GateReview>>,
+  patches: Record<string, string>,
+): Partial<Record<GateId, GateReview>> {
+  for (const g of Object.keys(reviews) as unknown as GateId[]) {
+    const review = reviews[g];
+    if (!review) continue;
+    review.fields = review.fields.map((f) =>
+      patches[f.id] != null ? { ...f, value: patches[f.id] } : f,
+    );
+  }
+  return reviews;
+}
+
+// Solution-design & governance values captured across the gates for AI-REG-025.
+// Feed the "Modell & Integration" / "Governance" register tabs.
+const REG025_FIELD_VALUES: Record<string, string> = {
+  // Gate 2 — Human Oversight
+  g2_oversight: "Erforderlich bei personenbezogenen Bewertungen oder kritischen Empfehlungen",
+  // Gate 3 — Modellroute
+  g3_backend: "Azure OpenAI EU Deployment",
+  g3_route: "Gateway → Policy Check → Azure OpenAI EU",
+  g3_fallbackmodel: "Nicht freigegeben",
+  g3_aidienste: "RAG / Vector Search · Azure AI Search",
+  g3_authn: "Entra ID (SSO / OIDC)",
+  // Gate 3 — Technische Kontrollen
+  g3_gateway: "Aktiv",
+  g3_dlp: "Aktiv für C2/C3-Dokumente",
+  g3_secrets: "Azure Key Vault",
+  g3_siem: "Application Insights / SIEM",
+  g3_logconcept: "Erweitertes Audit Logging",
+};
+
+const REG025_AUDIT: AuditEntry[] = [
+  { date: "24.06.2026", event: "Gate 4 Pilotfreigabe", actor: "Gatekeeper 4", action: "Pilot unter Auflagen freigegeben" },
+  { date: "02.06.2026", event: "Gate 3 Review", actor: "Security & Architektur", action: "Solution Design freigegeben" },
+  { date: "12.05.2026", event: "Gate 2 Review", actor: "Data & Compliance", action: "Datenklasse 0–2 freigegeben" },
+  { date: "28.04.2026", event: "Gate 1 Intake", actor: "Intake Board", action: "Business Case bestätigt" },
+  { date: "20.04.2026", event: "AI Request erstellt", actor: "AI Owner", action: "Initialer Request eingereicht" },
+];
 
 const r1 = req({
   titel: "KI Wissens-Assistent",
@@ -193,12 +237,15 @@ export const INITIATIVES: Initiative[] = [
     gateProgress: 75,
     status: "in_review",
     reApprovalDue: false,
-    gateReviews: seedReviews(4, r1, 4),
+    gateReviews: withFieldValues(seedReviews(4, r1, 4), REG025_FIELD_VALUES),
     createdDate: "12.01.2026",
     lastChanged: "2026-06-24",
     nextReview: "15.07.2026",
     openAuflagen: 2,
     criticalFindings: 0,
+    openFindings: 0,
+    auditTrail: REG025_AUDIT,
+    auditTotal: 25,
     changesSinceApproval: "1 geplante Erweiterung des Nutzerkreises.",
     gateDecisionSummary: "Gate 4: Pilot für 40 Mitarbeitende freigegeben.",
     nextStep: "Gate 5 Review nach Pilotphase.",
@@ -210,6 +257,10 @@ export const INITIATIVES: Initiative[] = [
       tokenLimitM: 10,
       costMonth: 1240,
       costLimit: 2000,
+      adoptionTargetPct: 70,
+      estimatedValueMonth: 4800,
+      valueLever: "Schnellere Auskunft zu internen Richtlinien",
+      ownerAssessment: "Pilotnutzen plausibel, weitere Messung erforderlich — Zeitersparnis bei Richtlinienrecherche bestätigt.",
     },
     request: r1,
   },
