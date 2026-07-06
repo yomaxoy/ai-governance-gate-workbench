@@ -369,7 +369,7 @@ function GateFooter({
           <span className="text-[11px] font-medium text-muted">
             {gate === 5
               ? "Review Fortschritt"
-              : `${remaining} von ${outcome.totalCount} Kriterien zu prüfen`}
+              : `${remaining} von ${outcome.totalCount} Feldern zu bearbeiten`}
           </span>
         </span>
         {missingNotes && (

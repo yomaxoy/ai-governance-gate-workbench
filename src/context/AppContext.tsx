@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -24,6 +25,21 @@ import type {
   NotificationItem,
   Role,
 } from "@/lib/types";
+
+// --- Persistence (localStorage, no backend) -------------------
+// Holds the mutable app data — including every gate review inside
+// `initiatives.gateReviews`, since all workbench edits flow through
+// updateInitiative(). Bump the version to discard incompatible old
+// data after a shape change in mock-data/types.
+const STORAGE_VERSION = 1;
+const STORAGE_KEY = `aigov-state-v${STORAGE_VERSION}`;
+
+interface PersistedState {
+  initiatives: Initiative[];
+  notifications: NotificationItem[];
+  drafts: DraftItem[];
+  user: CurrentUser;
+}
 
 interface WizardState {
   open: boolean;
@@ -92,6 +108,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
     gate: 1,
     seq: 0,
   });
+
+  // Tracks whether the one-time hydrate from localStorage has run, so the
+  // initial (mock-seeded) render can't overwrite persisted data on first save.
+  const [hydrated, setHydrated] = useState(false);
+
+  // Hydrate once on mount. localStorage is client-only, so this runs in an
+  // effect (never during SSR) — avoiding a hydration mismatch at the cost of
+  // a brief flash of the seed data on reload.
+  useEffect(() => {
+    // Syncing an external store (localStorage) INTO React on mount is the
+    // sanctioned effect use-case; set-state-in-effect is a false positive here.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const s = JSON.parse(raw) as Partial<PersistedState>;
+        if (Array.isArray(s.initiatives)) setInitiatives(s.initiatives);
+        if (Array.isArray(s.notifications)) setNotifications(s.notifications);
+        if (Array.isArray(s.drafts)) setDrafts(s.drafts);
+        if (s.user) setUser(s.user);
+      }
+    } catch {
+      // Corrupt or incompatible persisted state → keep the seeded mock data.
+    }
+    setHydrated(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
+
+  // Persist on every change, but only after hydration.
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      const state: PersistedState = { initiatives, notifications, drafts, user };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // Quota exceeded / storage disabled → stay in-memory for this session.
+    }
+  }, [hydrated, initiatives, notifications, drafts, user]);
 
   const login = useCallback(() => setLoggedIn(true), []);
   const logout = useCallback(() => setLoggedIn(false), []);

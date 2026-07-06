@@ -37,4 +37,4 @@ Datei: `src/app/initiative/[id]/page.tsx` · alle 5 Reiter 1:1 nach PDF + Screen
 Vorgehen je Reiter: anpassen → per Screenshot (`scratchpad/dumpgate.mjs`-Muster) verifizieren.
 
 ## 🐞 Bekannte offene Punkte
-- Gate-Footer zeigt „X von N Kriterien", N = Anzahl Review-Felder (nicht die 9 Prüfkriterien) — noch nicht geändert.
+- ✅ Gate-Footer: Zähler benennt jetzt eindeutig „X von N Feldern zu bearbeiten" (statt irreführend „Kriterien zu prüfen") — der Zähler zählt technisch die Review-Felder, nicht die 9 Prüfkriterien; die Checkliste bleibt „Gate N Prüfkriterien".
