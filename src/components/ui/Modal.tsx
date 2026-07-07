@@ -24,7 +24,7 @@ export function Modal({
   return (
     <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/40 p-4 py-8">
       <div
-        className={`relative flex max-h-[90vh] w-full ${widthClass} flex-col rounded-card bg-white shadow-xl`}
+        className={`relative flex max-h-[90vh] w-full ${widthClass} flex-col rounded-card bg-white shadow-xl overflow-hidden rounded-2xl bg-white shadow-xl`}
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">

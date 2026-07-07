@@ -36,7 +36,7 @@ export function InitiativeCard({ initiative }: { initiative: Initiative }) {
           //onClick={() => openWorkbench(initiative.id, initiative.currentGate)}
           className="rounded-full bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary-dark"
         >
-          Öffnen
+          AI Service öffnen
         </button>
         <button
           aria-label="Teilen"
