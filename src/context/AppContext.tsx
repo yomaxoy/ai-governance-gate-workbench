@@ -31,7 +31,7 @@ import type {
 // `initiatives.gateReviews`, since all workbench edits flow through
 // updateInitiative(). Bump the version to discard incompatible old
 // data after a shape change in mock-data/types.
-const STORAGE_VERSION = 1;
+const STORAGE_VERSION = 2;
 const STORAGE_KEY = `aigov-state-v${STORAGE_VERSION}`;
 
 interface PersistedState {

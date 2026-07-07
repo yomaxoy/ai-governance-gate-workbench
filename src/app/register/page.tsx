@@ -17,11 +17,19 @@ import {
 type ViewMode = "table" | "kachel";
 
 function RegisterContent() {
-  const { initiatives } = useApp();
+  const { initiatives, user } = useApp();
   const router = useRouter();
   const params = useSearchParams();
-  const view: ViewMode = params.get("view") === "kachel" ? "kachel" : "table";
   const [query, setQuery] = useState("");
+  const viewParam = params.get("view");
+  const view: ViewMode =
+    viewParam === "table"
+      ? "table"
+      : viewParam === "kachel"
+        ? "kachel"
+        : user.dashboardView === "AI_OWNER"
+          ? "kachel"
+          : "table";
 
   const setView = (v: ViewMode) => router.replace(`/register?view=${v}`);
 
