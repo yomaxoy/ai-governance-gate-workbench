@@ -94,7 +94,7 @@ export function ManagementTrendChart() {
   return (
     <section className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_0.78fr_0.9fr]">
       {/* Risk / Value Matrix */}
-      <div className="rounded-card border border-border bg-white p-4 shadow-sm">
+      <div className="rounded-card border border-border bg-white p-4">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
             <h2 className="text-base font-semibold text-text">
@@ -174,7 +174,7 @@ export function ManagementTrendChart() {
       </div>
 
       {/* Portfolio by Gate / Lifecycle */}
-      <div className="rounded-card border border-border bg-white p-4 shadow-sm">
+      <div className="rounded-card border border-border bg-white p-4">
         <div className="mb-4">
           <h2 className="text-sm font-bold uppercase tracking-wide text-text">
             Portfolio nach Gate & Lifecycle
@@ -222,7 +222,7 @@ export function ManagementTrendChart() {
       </div>
 
       {/* Steering Signals */}
-      <div className="rounded-card border border-border bg-white p-4 shadow-sm">
+      <div className="rounded-card border border-border bg-white p-4">
         <div className="mb-4">
           <h2 className="text-sm font-bold uppercase tracking-wide text-text">
             Aktuelle Steuerungssignale
