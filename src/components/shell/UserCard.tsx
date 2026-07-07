@@ -106,7 +106,7 @@ export function UserCard() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="truncate text-sm font-medium text-text">{user.name}</p>
-          <p className="truncate text-xs text-muted">{user.jobTitle}</p>
+          <p className="truncate text-xs text-muted">{VIEW_LABEL[user.dashboardView]}</p>
         </div>
         <ChevronUp
           size={16}
