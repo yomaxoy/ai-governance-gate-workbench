@@ -1,237 +1,265 @@
 "use client";
 
-import { useState } from "react";
-import {
-  MANAGEMENT_TREND,
-  TREND_RANGE_LABELS,
-  type TrendRange,
-} from "@/lib/management-trend";
+const portfolioBubbles = [
+  {
+    label: "KI Wissens-Assistent",
+    x: 68,
+    y: 28,
+    className: "bg-emerald-400",
+  },
+  {
+    label: "Fraud Detector",
+    x: 54,
+    y: 58,
+    className: "bg-rose-600",
+  },
+  {
+    label: "HR Talent Scout",
+    x: 42,
+    y: 56,
+    className: "bg-amber-500",
+  },
+  {
+    label: "Marketing Content Gen",
+    x: 80,
+    y: 72,
+    className: "bg-primary",
+  },
+];
 
-const RANGES: TrendRange[] = ["daily", "weekly", "monthly"];
+const gateDistribution = [
+  { label: "G1", value: 4, className: "bg-primary" },
+  { label: "G2", value: 5, className: "bg-blue-500" },
+  { label: "G3", value: 6, className: "bg-sky-400" },
+  { label: "G4", value: 7, className: "bg-teal-400" },
+  { label: "G5", value: 3, className: "bg-emerald-400" },
+];
 
-// viewBox-Koordinaten (skalieren via width:100% + preserveAspectRatio).
-const VB_W = 640;
-const VB_H = 280;
-const PAD_L = 46;
-const PAD_R = 16;
-const PAD_T = 16;
-const PAD_B = 30;
-const PLOT_L = PAD_L;
-const PLOT_R = VB_W - PAD_R;
-const PLOT_T = PAD_T;
-const PLOT_B = VB_H - PAD_B;
-const PLOT_W = PLOT_R - PLOT_L;
-const PLOT_H = PLOT_B - PLOT_T;
-const TICK_COUNT = 4; // → 5 horizontale Gitterlinien inkl. 0 und Maximum
+const lifecycleStats = [
+  {
+    label: "In Prüfung",
+    value: 8,
+    className: "border-blue-200 bg-blue-50 text-blue-800",
+  },
+  {
+    label: "Pilot",
+    value: 7,
+    className: "border-teal-200 bg-teal-50 text-teal-800",
+  },
+  {
+    label: "Produktiv",
+    value: 6,
+    className: "border-gray-200 bg-white text-text",
+  },
+  {
+    label: "Review fällig",
+    value: 3,
+    className: "border-gray-200 bg-white text-text",
+  },
+  {
+    label: "Blockiert",
+    value: 1,
+    className: "border-red-200 bg-red-50 text-red-700",
+  },
+];
 
-const nf = new Intl.NumberFormat("de-DE");
-
-/** Rundet den Maximalwert auf einen „schönen" Achsenwert auf. */
-function niceMax(v: number): number {
-  if (v <= 0) return 1;
-  const pow = Math.pow(10, Math.floor(Math.log10(v)));
-  const n = v / pow;
-  const step = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((s) => n <= s) ?? 10;
-  return step * pow;
-}
+const steeringSignals = [
+  {
+    label: "Kritische Findings offen",
+    value: 4,
+    icon: "!",
+    className: "border-red-200 bg-red-50 text-red-700",
+  },
+  {
+    label: "Re-Approvals fällig",
+    value: 3,
+    icon: "↻",
+    className: "border-gray-200 bg-gray-50 text-text",
+  },
+  {
+    label: "Kostenwarnungen",
+    value: 2,
+    icon: "↗",
+    className: "border-amber-200 bg-amber-50 text-amber-700",
+  },
+  {
+    label: "Blockierender Gate-Fund",
+    value: 1,
+    icon: "i",
+    className: "border-blue-200 bg-blue-50 text-blue-800",
+  },
+];
 
 export function ManagementTrendChart() {
-  const [range, setRange] = useState<TrendRange>("monthly");
-  const [hovered, setHovered] = useState<number | null>(null);
-
-  const data = MANAGEMENT_TREND[range];
-  const max = niceMax(Math.max(...data.map((d) => d.value)));
-
-  const x = (i: number) =>
-    data.length <= 1 ? PLOT_L : PLOT_L + (i / (data.length - 1)) * PLOT_W;
-  const y = (v: number) => PLOT_B - (v / max) * PLOT_H;
-
-  const points = data.map((d, i) => ({ ...d, cx: x(i), cy: y(d.value) }));
-  const linePoints = points.map((p) => `${p.cx},${p.cy}`).join(" ");
-  const areaPoints = `${PLOT_L},${PLOT_B} ${linePoints} ${PLOT_R},${PLOT_B}`;
-
-  const ticks = Array.from({ length: TICK_COUNT + 1 }, (_, t) => {
-    const value = (t / TICK_COUNT) * max;
-    return { value, cy: y(value) };
-  });
-
-  const active = hovered != null ? points[hovered] : null;
-
   return (
-    <section className="mt-6 rounded-card border border-border bg-white p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-text">
-            AI-Aktivität im Zeitverlauf
+    <section className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_0.78fr_0.9fr]">
+      {/* Risk / Value Matrix */}
+      <div className="rounded-card border border-border bg-white p-4 shadow-sm">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-text">
+              Risk / Value Portfolio Matrix
+            </h2>
+            <p className="mt-0.5 text-xs text-muted">
+              Priorisierung nach Wertbeitrag, Adoption und Kontrollbedarf
+            </p>
+          </div>
+
+          <div className="inline-flex shrink-0 rounded-lg bg-surface p-0.5 text-xs">
+            <span className="rounded-md px-2 py-1 text-muted">Täglich</span>
+            <span className="rounded-md px-2 py-1 text-muted">Wöchentlich</span>
+            <span className="rounded-md bg-primary px-2 py-1 font-medium text-primary-foreground">
+              Monatlich
+            </span>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-white p-4">
+          <div className="relative h-[245px]">
+            {/* Plot area */}
+            <div className="absolute bottom-8 left-4 right-4 top-3">
+              {/* quadrant lines */}
+              <div className="absolute left-1/2 top-0 h-full border-l border-border" />
+              <div className="absolute left-0 right-0 top-1/2 border-t border-border" />
+
+              {/* quadrant labels */}
+              <span className="absolute left-8 top-3 text-xs font-medium text-muted">
+                Eng steuern
+              </span>
+              <span className="absolute right-16 top-3 text-xs font-medium text-muted">
+                Skalieren
+              </span>
+              <span className="absolute bottom-3 left-8 text-xs font-medium text-muted">
+                Pausieren
+              </span>
+              <span className="absolute bottom-3 right-16 text-xs font-medium text-muted">
+                Beobachten
+              </span>
+
+              {portfolioBubbles.map((item) => (
+                <div
+                  key={item.label}
+                  className={`absolute h-4 w-4 rounded-full shadow-sm ring-4 ring-white ${item.className}`}
+                  style={{ left: `${item.x}%`, top: `${item.y}%` }}
+                  title={item.label}
+                />
+              ))}
+            </div>
+
+            {/* y-axis label */}
+            <div className="absolute bottom-12 -left-17 top-5 flex flex-col items-center justify-center gap-1">
+              <span className="-rotate-90 whitespace-nowrap text-xs font-semibold text-text">
+                Risiko / Kontrollbedarf →
+              </span>
+            </div>
+
+            {/* x-axis label */}
+            <div className="absolute bottom-3 left-4 right-4 text-center text-xs font-semibold text-text">
+              Wertbeitrag / Adoption →
+            </div>
+          </div>
+
+          {/* legend below chart, no overlap */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {portfolioBubbles.map((item) => (
+              <span
+                key={item.label}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold text-white ${item.className}`}
+              >
+                {item.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Portfolio by Gate / Lifecycle */}
+      <div className="rounded-card border border-border bg-white p-4 shadow-sm">
+        <div className="mb-4">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-text">
+            Portfolio nach Gate & Lifecycle
           </h2>
-          <p className="mt-0.5 text-xs text-muted">
-            Verarbeitete AI-Requests · {TREND_RANGE_LABELS[range]}
+          <p className="mt-1 text-xs text-muted">
+            Status der registrierten KI-Initiativen
           </p>
         </div>
 
-        <div
-          className="inline-flex rounded-lg bg-surface p-0.5"
-          role="tablist"
-          aria-label="Zeitraum"
-        >
-          {RANGES.map((r) => (
-            <button
-              key={r}
-              type="button"
-              role="tab"
-              aria-selected={range === r}
-              onClick={() => {
-                setRange(r);
-                setHovered(null);
-              }}
-              className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-                range === r
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted hover:text-text"
-              }`}
+        <div className="mb-3 flex items-center justify-between text-sm">
+          <span className="font-medium text-text">Gates 1–5 Verteilung</span>
+          <span className="font-bold text-text">25 Gesamt</span>
+        </div>
+
+        <div className="flex h-3 overflow-hidden rounded-full bg-surface">
+          {gateDistribution.map((gate) => (
+            <div
+              key={gate.label}
+              className={gate.className}
+              style={{ width: `${(gate.value / 25) * 100}%` }}
+              title={`${gate.label}: ${gate.value}`}
+            />
+          ))}
+        </div>
+
+        <div className="mt-2 grid grid-cols-5 gap-1 text-[10px] text-muted">
+          {gateDistribution.map((gate) => (
+            <span key={gate.label}>
+              {gate.label}: {gate.value}
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          {lifecycleStats.map((item) => (
+            <div
+              key={item.label}
+              className={`rounded-lg border px-3 py-2 text-sm ${item.className}`}
             >
-              {TREND_RANGE_LABELS[r]}
-            </button>
+              <span className="font-medium">{item.label}</span>
+              <span className="float-right font-bold">{item.value}</span>
+            </div>
           ))}
         </div>
       </div>
 
-      <div className="mt-4">
-        <svg
-          viewBox={`0 0 ${VB_W} ${VB_H}`}
-          preserveAspectRatio="xMidYMid meet"
-          width="100%"
-          role="img"
-          aria-label={`Liniendiagramm der AI-Aktivität (${TREND_RANGE_LABELS[range]})`}
-          className="block h-auto w-full"
-          onMouseLeave={() => setHovered(null)}
-        >
-          {/* horizontale Gitterlinien + Y-Achsen-Beschriftung */}
-          {ticks.map((t, i) => (
-            <g key={i}>
-              <line
-                x1={PLOT_L}
-                y1={t.cy}
-                x2={PLOT_R}
-                y2={t.cy}
-                stroke="var(--color-border)"
-                strokeWidth={1}
-              />
-              <text
-                x={PLOT_L - 8}
-                y={t.cy + 3}
-                textAnchor="end"
-                fontSize={11}
-                fill="var(--color-muted)"
-              >
-                {nf.format(Math.round(t.value))}
-              </text>
-            </g>
-          ))}
+      {/* Steering Signals */}
+      <div className="rounded-card border border-border bg-white p-4 shadow-sm">
+        <div className="mb-4">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-text">
+            Aktuelle Steuerungssignale
+          </h2>
+          <p className="mt-1 text-xs text-muted">
+            Handlungsbedarf aus Gates, Betrieb und Monitoring
+          </p>
+        </div>
 
-          {/* Fläche unter der Linie */}
-          <polygon
-            points={areaPoints}
-            fill="var(--color-primary)"
-            opacity={0.08}
-          />
-
-          {/* Linie in Primärfarbe */}
-          <polyline
-            points={linePoints}
-            fill="none"
-            stroke="var(--color-primary)"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-
-          {/* X-Achsen-Labels */}
-          {points.map((p, i) => (
-            <text
-              key={i}
-              x={p.cx}
-              y={VB_H - 10}
-              textAnchor="middle"
-              fontSize={11}
-              fill="var(--color-muted)"
+        <div className="space-y-3">
+          {steeringSignals.map((signal) => (
+            <div
+              key={signal.label}
+              className="flex items-center justify-between gap-3 border-b border-border pb-3 last:border-b-0 last:pb-0"
             >
-              {p.label}
-            </text>
-          ))}
+              <div className="flex items-center gap-3">
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-bold ${signal.className}`}
+                >
+                  {signal.icon}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-text">
+                    {signal.value} {signal.label}
+                  </p>
+                  <p className="text-xs text-muted">
+                    Aus AI Register, Gate Workbench und Betrieb
+                  </p>
+                </div>
+              </div>
 
-          {/* Datenpunkte + Hover-Ziele */}
-          {points.map((p, i) => (
-            <g key={i}>
-              <circle
-                cx={p.cx}
-                cy={p.cy}
-                r={hovered === i ? 5 : 3.5}
-                fill={hovered === i ? "var(--color-primary)" : "#ffffff"}
-                stroke="var(--color-primary)"
-                strokeWidth={2}
-              />
-              {/* großzügiges, transparentes Hover-Ziel */}
-              <rect
-                x={p.cx - PLOT_W / (data.length * 2)}
-                y={PLOT_T}
-                width={PLOT_W / data.length}
-                height={PLOT_H}
-                fill="transparent"
-                onMouseEnter={() => setHovered(i)}
-              >
-                <title>{`${p.label}: ${nf.format(p.value)} Requests`}</title>
-              </rect>
-            </g>
+              <button className="text-xs font-semibold text-primary hover:underline">
+                Details
+              </button>
+            </div>
           ))}
-
-          {/* State-basierter Tooltip */}
-          {active && (
-            <g pointerEvents="none">
-              <line
-                x1={active.cx}
-                y1={PLOT_T}
-                x2={active.cx}
-                y2={PLOT_B}
-                stroke="var(--color-primary)"
-                strokeWidth={1}
-                strokeDasharray="3 3"
-                opacity={0.5}
-              />
-              {(() => {
-                const label = `${active.label}: ${nf.format(active.value)}`;
-                const w = label.length * 6.5 + 18;
-                const tx = Math.min(
-                  Math.max(active.cx, PLOT_L + w / 2),
-                  PLOT_R - w / 2,
-                );
-                const ty = Math.max(active.cy - 34, PLOT_T + 2);
-                return (
-                  <>
-                    <rect
-                      x={tx - w / 2}
-                      y={ty}
-                      width={w}
-                      height={24}
-                      rx={6}
-                      fill="var(--color-text)"
-                    />
-                    <text
-                      x={tx}
-                      y={ty + 16}
-                      textAnchor="middle"
-                      fontSize={12}
-                      fontWeight={600}
-                      fill="#ffffff"
-                    >
-                      {label}
-                    </text>
-                  </>
-                );
-              })()}
-            </g>
-          )}
-        </svg>
+        </div>
       </div>
     </section>
   );
