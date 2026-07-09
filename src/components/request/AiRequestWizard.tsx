@@ -35,7 +35,7 @@ const STEPS = [
 
 export function AiRequestWizard() {
   const { wizard } = useApp();
-  // Remount per open (seq) so form state initializes fresh — no reset effect.
+  // Remount per open (seq) so form state initializes fresh - no reset effect.
   if (!wizard.open) return null;
   return <WizardForm key={wizard.seq} />;
 }
@@ -84,10 +84,10 @@ function WizardForm() {
       summary: data.problem.slice(0, 80) || "Neue eingereichte Initiative.",
       description: data.problem.slice(0, 120) || "Neue eingereichte Initiative.",
       aiOwner: data.aiOwner || user.name,
-      technicalOwner: data.technischerAnsprechpartner || "—",
+      technicalOwner: data.technischerAnsprechpartner || "-",
       fachbereich: data.fachbereich,
       risk: "in Prüfung",
-      dataClass: data.datenklasse || "—",
+      dataClass: data.datenklasse || "-",
       lifecycleLabel: "In Prüfung",
       currentGate: 1,
       gateProgress: 8,
@@ -96,10 +96,10 @@ function WizardForm() {
       gateReviews,
       createdDate: today,
       lastChanged: today,
-      nextReview: "—",
+      nextReview: "-",
       openAuflagen: 0,
       criticalFindings: 0,
-      changesSinceApproval: "—",
+      changesSinceApproval: "-",
       gateDecisionSummary: "Intake eingereicht.",
       nextStep: "Gate 1 Entscheidung durch das Intake Board.",
       usage: {

@@ -17,11 +17,19 @@ import {
 type ViewMode = "table" | "kachel";
 
 function RegisterContent() {
-  const { initiatives } = useApp();
+  const { initiatives, user } = useApp();
   const router = useRouter();
   const params = useSearchParams();
-  const view: ViewMode = params.get("view") === "kachel" ? "kachel" : "table";
   const [query, setQuery] = useState("");
+  const viewParam = params.get("view");
+  const view: ViewMode =
+    viewParam === "table"
+      ? "table"
+      : viewParam === "kachel"
+        ? "kachel"
+        : user.dashboardView === "AI_OWNER"
+          ? "kachel"
+          : "table";
 
   const setView = (v: ViewMode) => router.replace(`/register?view=${v}`);
 
@@ -62,11 +70,11 @@ function RegisterContent() {
         </div>
       </PageHeader>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {REGISTER_KPIS.map((k) => (
           <KpiTile key={k.label} {...k} />
         ))}
-      </div>
+      </div> */}
 
       {view === "table" ? (
         <div className="mt-6">
